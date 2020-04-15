@@ -21,8 +21,6 @@ API for melding om ettersendelse av dokumentasjon for pleiepenger og omsorgspeng
 # 2. Funksjonelle Krav
 Denne tjenesten understøtter søknadsprosessen, samt eksponerer endepunkt for innsending av vedlegg.
 
-
-
 # 3. Begrensninger
 
 # 4. Prinsipper
