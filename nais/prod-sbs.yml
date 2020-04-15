@@ -1,0 +1,68 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: k9-ettersending-api
+  namespace: default
+  labels:
+    team: dusseldorf
+spec:
+  image: {{ image }}
+  port: 8080
+  liveness:
+    path: isalive
+    initialDelay: 20
+    timeout: 1
+    periodSeconds: 5
+    failureThreshold: 10
+  readiness:
+    path: isready
+    initialDelay: 20
+    timeout: 1
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 1024Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  ingresses:
+    - https://k9-ettersending-api.nav.no
+    - https://k9-ettersending-api.nais.oera.no
+  replicas:
+    min: 1
+    max: 1
+    cpuThresholdPercentage: 90
+  prometheus:
+    enabled: true
+    path: /metrics
+  vault:
+    enabled: true
+    paths:  # Optional. If specified, will override default values with custom Vault configuration.
+      - mountPath: /var/run/secrets/nais.io/vault  # Filesystem path inside the pod where secrets will appear.
+        kvPath: /kv/prod/sbs/k9-ettersending-api/default  # Vault KV path to fetch secrets from.
+      - mountPath: /var/run/secrets/nais.io/azuread
+        kvPath: /azuread/data/prod/creds/k9-ettersending-api
+      - mountPath: /var/run/secrets/nais.io/apigw
+        kvPath: /apikey/apigw/prod/helse-reverse-proxy/k9-ettersending-api
+  webproxy: true
+  env:
+    - name: REDIS_HOST
+      value: k9-ettersending-api-redis.default.svc.nais.local
+    - name: CORS_ADDRESSES
+      value: https://www.nav.no
+    - name: ISSUER
+      value: https://login.microsoftonline.com/8b7dfc8b-b52e-4741-bde4-d83ea366f94f/v2.0/
+    - name: COOKIE_NAME
+      value: selvbetjening-idtoken
+    - name: JWKS_URI
+      value: https://login.microsoftonline.com/navnob2c.onmicrosoft.com/discovery/v2.0/keys?p=b2c_1a_idporten
+    - name: K9_OPPSLAG_REGISTER_URL
+      value: https://api-gw.oera.no/helse-reverse-proxy/k9-selvbetjening-oppslag
+    - name: K9_ETTERSENDING_MOTTAK_BASE_URL
+      value: https://api-gw.oera.no/helse-reverse-proxy/k9-ettersending-mottak
+    - name: K9_DOKUMENT_BASE_URL
+      value: https://k9-dokument.nais.oera.no
+    - name: AZURE_V2_DISCOVERY_ENDPOINT
+      value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0/.well-known/openid-configuration
+    - name: SENDE_SOKNAD_TIL_PROSESSERING_SCOPES
+      value: 17cf17e5-6f39-47a6-81f8-7e5507b19f6b/.default #TODO: Oppdater til clientId til k9-ettersending-mottak
