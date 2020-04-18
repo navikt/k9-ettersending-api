@@ -65,4 +65,4 @@ spec:
     - name: AZURE_V2_DISCOVERY_ENDPOINT
       value: https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0/.well-known/openid-configuration
     - name: SENDE_SOKNAD_TIL_PROSESSERING_SCOPES
-      value: 17cf17e5-6f39-47a6-81f8-7e5507b19f6b/.default #TODO: Oppdater til clientId til k9-ettersending-mottak
+      value: ea43448c-d3b4-4fce-8295-02378ab71c75/.default
