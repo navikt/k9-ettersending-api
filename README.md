@@ -1,6 +1,7 @@
 # K9 Ettersending API
 
 ![CI / CD](https://github.com/navikt/k9-ettersending-api/workflows/CI%20/%20CD/badge.svg)
+![NAIS Alerts](https://github.com/navikt/k9-ettersending-api/workflows/Alerts/badge.svg)
 
 # Innholdsoversikt
 * [1. Kontekst](#1-kontekst)
@@ -49,6 +50,10 @@ For å bygge kode, kjør:
 ```
 
 # 11. Drift og støtte
+
+## Alarmer
+Vi bruker [nais-alerts](https://doc.nais.io/observability/alerts) for å sette opp alarmer. Disse finner man konfigurert i [nais/alerts.yml](nais/alerts.yml).
+
 ## Logging
 
 # Metrics
