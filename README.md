@@ -49,6 +49,10 @@ For å bygge kode, kjør:
 ```
 
 # 11. Drift og støtte
+
+## Alarmer
+Vi bruker [nais-alerts](https://doc.nais.io/observability/alerts) for å sette opp alarmer. Disse finner man konfigurert i [nais/alerts.yml](nais/alerts.yml).
+
 ## Logging
 
 # Metrics
