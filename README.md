@@ -1,6 +1,7 @@
 # K9 Ettersending API
 
 ![CI / CD](https://github.com/navikt/k9-ettersending-api/workflows/CI%20/%20CD/badge.svg)
+![Nais Alerts](https://github.com/navikt/k9-ettersending-api/workflows/alerts/badge.svg)
 
 # Innholdsoversikt
 * [1. Kontekst](#1-kontekst)
