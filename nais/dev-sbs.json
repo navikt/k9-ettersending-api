@@ -24,6 +24,6 @@
     "AZURE_V2_DISCOVERY_ENDPOINT": "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0/.well-known/openid-configuration",
     "SENDE_SOKNAD_TIL_PROSESSERING_SCOPES": "5605d52e-6344-4703-88e8-b98fb6eb69b5/.default"
   },
-  "slack-channel": "#sif-alerts-dev",
+  "slack-channel": "sif-alerts-dev",
   "app-alert-ingress": "https://k9-ettersending-api-q.nav.no"
 }
