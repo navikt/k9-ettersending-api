@@ -21,7 +21,6 @@
     "K9_OPPSLAG_REGISTER_URL": "https://api-gw.oera.no/helse-reverse-proxy/k9-selvbetjening-oppslag",
     "K9_ETTERSENDING_MOTTAK_BASE_URL": "https://api-gw.oera.no/helse-reverse-proxy/k9-ettersending-mottak",
     "K9_DOKUMENT_BASE_URL": "https://k9-dokument.nais.oera.no",
-    "AZURE_CLIENT_ID": "c7138cc4-8cef-41bf-99e0-2d3884a106f0",
     "AZURE_V2_DISCOVERY_ENDPOINT": "https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/v2.0/.well-known/openid-configuration",
     "SENDE_SOKNAD_TIL_PROSESSERING_SCOPES": "ea43448c-d3b4-4fce-8295-02378ab71c75/.default"
   },
