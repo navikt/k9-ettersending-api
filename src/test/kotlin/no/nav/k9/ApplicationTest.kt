@@ -88,6 +88,53 @@ class ApplicationTest {
     }
 
     @Test
+    fun `test metrics`() {
+
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val finnesIkkeUrl = jpegUrl.substringBeforeLast("/").plus("/").plus(UUID.randomUUID().toString())
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedResponse = """
+            {
+              "type": "/problem-details/invalid-request-parameters",
+              "title": "invalid-request-parameters",
+              "status": 400,
+              "detail": "Requesten inneholder ugyldige paramtere.",
+              "instance": "about:blank",
+              "invalid_parameters": [
+                {
+                  "type": "entity",
+                  "name": "vedlegg",
+                  "reason": "Mottok referanse til 2 vedlegg, men fant kun 1 vedlegg.",
+                  "invalid_value": [
+                    "$jpegUrl",
+                    "$finnesIkkeUrl"
+                  ]
+                }
+              ]
+            }""".trimIndent(),
+            expectedCode = HttpStatusCode.BadRequest,
+            cookie = cookie,
+            requestEntity = EttersendingUtils.defaultEttersending.copy(
+                vedlegg = listOf(
+                    URL(jpegUrl), URL(finnesIkkeUrl)
+                )
+            ).somJson()
+        )
+
+        with(engine) {
+            handleRequest(HttpMethod.Get, "/metrics") {}.apply {
+                System.err.println(response.content)
+                assertEquals(HttpStatusCode.OK, response.status())
+            }
+        }
+    }
+
+
+    @Test
     fun `test isready, isalive, health og metrics`() {
         with(engine) {
             handleRequest(HttpMethod.Get, "/isready") {}.apply {
@@ -420,6 +467,7 @@ class ApplicationTest {
                 assertEquals(expectedCode, response.status())
                 if (expectedResponse != null) {
                     JSONAssert.assertEquals(expectedResponse, response.content!!, true)
+                    //assertEquals("sss", response.headers["problem-details"])
                 } else {
                     assertEquals(expectedResponse, response.content)
                 }

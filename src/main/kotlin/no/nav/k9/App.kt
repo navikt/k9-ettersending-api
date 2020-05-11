@@ -4,6 +4,7 @@ import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
@@ -17,8 +18,14 @@ import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
+import io.ktor.request.receive
+import io.ktor.response.header
 import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
+import io.micrometer.core.instrument.Clock
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dusseldorf.ktor.auth.clients
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
@@ -31,7 +38,6 @@ import no.nav.helse.dusseldorf.ktor.health.HealthService
 import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
-import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.ettersending.EttersendingService
 import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.auth.authorizationStatusPages
@@ -117,6 +123,7 @@ fun Application.k9EttersendingApi() {
 
     install(StatusPages) {
         DefaultStatusPages()
+        CustomStatusPages()
         JacksonStatusPages()
         authorizationStatusPages()
     }
@@ -224,6 +231,49 @@ fun Application.k9EttersendingApi() {
         }
     }
 }
+
+fun StatusPages.Configuration.CustomStatusPages() {
+
+    exception<Throwblem> { cause ->
+        call.response.header("invalid-parameters", invalidParametersSomString(cause))
+        call.respondProblemDetails(cause.getProblemDetails() , logger)
+    }
+
+    exception<Throwable> { cause ->
+        if (cause is Problem) {
+            call.response.header("invalid-parameters", cause.getProblemDetails().asMap().toString())
+            call.respondProblemDetails(cause.getProblemDetails(), logger)
+        }
+    }
+}
+
+private fun invalidParametersSomString(cause: Throwblem): String = cause.getProblemDetails().asMap()["invalid_parameters"].toString()
+
+fun MicrometerMetrics.Configuration.init(
+    app: String,
+    collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
+) {
+    registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, collectorRegistry, Clock.SYSTEM)
+    timers { call, throwable ->
+        tag("app", app)
+        tag("result",
+            when {
+                throwable != null -> "failure"
+                call.response.status() == null -> "failure"
+                call.response.status()!!.isSuccessOrRedirect() -> "success"
+                else -> "failure"
+            }
+        )
+        val problemDetails = call.response.headers["invalid-parameters"]
+        tag("invalid-parameters",
+            if (problemDetails != null) {
+                problemDetails
+            } else "n/a"
+        )
+    }
+}
+
+private fun HttpStatusCode.isSuccessOrRedirect() = value in (200 until 400)
 
 internal fun ObjectMapper.k9EttersendingKonfiguert() = dusseldorfConfigured()
     .setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
