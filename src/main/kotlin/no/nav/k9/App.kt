@@ -123,10 +123,10 @@ fun Application.k9EttersendingApi() {
     }
 
     install(StatusPages) {
-        DefaultStatusPages()
+        //DefaultStatusPages()
         JacksonStatusPages()
-        authorizationStatusPages()
         CustomStatusPages()
+        authorizationStatusPages()
     }
 
     install(Locations)
