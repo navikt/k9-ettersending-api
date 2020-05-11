@@ -25,6 +25,6 @@
     "SENDE_SOKNAD_TIL_PROSESSERING_SCOPES": "5605d52e-6344-4703-88e8-b98fb6eb69b5/.default"
   },
   "slack-channel": "sif-alerts-dev",
-  "slack-notify-type": "<!here> | ",
+  "slack-notify-type": "<!here> | {{app}} | ",
   "app-alert-ingress": "https://k9-ettersending-api-q.nav.no"
 }
