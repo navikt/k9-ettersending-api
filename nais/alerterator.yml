@@ -27,15 +27,17 @@ spec:
       expr: floor(increase(ktor_http_server_requests_seconds_count{result="failure", status=~"5.*", app="{{app}}"}[5m])) > 1
       for: 1m
       description: "Følgende request feilet: `Status \{{ $labels.status }} - \{{ $labels.method }} \{{ $labels.route }}`.\n
-      Grunn: \{{ $labels.invalid_parameters }}.\n
-      Sjekk loggene for å se hvorfor dette feiler."
+                    Grunn: \{{ $labels.invalid_parameters }}.\n
+                    Sjekk loggene for å se hvorfor dette feiler."
       action: "`kubectl logs \{{ $labels.kubernetes_pod_name }} -n \{{ $labels.kubernetes_namespace }}`"
 
     - alert: Høy andel HTTP klientfeil (4xx responser) i {{app}}
       severity: warning
       expr: floor(increase(ktor_http_server_requests_seconds_count{result="failure", status=~"4.*", status!~"404|401", app="{{app}}"}[5m])) > 3
       for: 1m
-      description: "Følgende request feilet: `Status \{{ $labels.status }} - \{{ $labels.method }} \{{ $labels.route }}`. Sjekk loggene for å se hvorfor dette feiler."
+      description: "Følgende request feilet: `Status \{{ $labels.status }} - \{{ $labels.method }} \{{ $labels.route }}`.\n
+                    Grunn: \{{ $labels.invalid_parameters }}.\n
+                    Sjekk loggene for å se hvorfor dette feiler."
       action: "`kubectl logs \{{ $labels.kubernetes_pod_name }} -n \{{ $labels.kubernetes_namespace }}`"
 
     - alert: {{app}} feiler
