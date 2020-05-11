@@ -294,7 +294,7 @@ fun StatusPages.Configuration.JacksonStatusPages() {
 
         logger.debug("Feil ved mapping av JSON", cause)
 
-        call.response.header("invalid-parameters", invalidParametersSomString(cause as Throwblem))
+        call.response.header("invalid-parameters", problemDetails.asMap()["invalid_parameters"].toString())
         call.respondProblemDetails(problemDetails, logger)
     }
 
@@ -307,7 +307,7 @@ fun StatusPages.Configuration.JacksonStatusPages() {
         )
         logger.debug("Feil ved prosessering av JSON", cause)
 
-        call.response.header("invalid-parameters", invalidParametersSomString(cause as Throwblem))
+        call.response.header("invalid-parameters", problemDetails.asMap()["invalid_parameters"].toString())
         call.respondProblemDetails(problemDetails, logger)
     }
 }

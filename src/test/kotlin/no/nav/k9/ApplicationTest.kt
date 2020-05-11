@@ -271,6 +271,50 @@ class ApplicationTest {
     }
 
     @Test
+    fun `Sende ettersending som mangler påkrevd felt`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedResponse = """
+                {
+                  "type": "/problem-details/invalid-request-parameters",
+                  "title": "invalid-request-parameters",
+                  "status": 400,
+                  "detail": "Requesten inneholder ugyldige paramtere.",
+                  "instance": "about:blank",
+                  "invalid_parameters": [
+                    {
+                      "type": "entity",
+                      "name": "språk",
+                      "reason": "Må være satt.",
+                      "invalid_value": null
+                    }
+                  ]
+                }
+            """.trimIndent(),
+            expectedCode = HttpStatusCode.BadRequest,
+            cookie = cookie,
+            requestEntity = """
+                {
+                  "språk": null,
+                  "vedlegg": [
+                    "$jpegUrl",
+                    "$pdfUrl"
+                  ],
+                  "harForståttRettigheterOgPlikter": true,
+                  "harBekreftetOpplysninger": true,
+                  "beskrivelse": "Masse tekst",
+                  "søknadstype": "omsorgspenger"
+                }
+            """.trimIndent()
+        )
+    }
+
+    @Test
     fun `Sende ettersending hvor et vedlegg ikke finnes`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
