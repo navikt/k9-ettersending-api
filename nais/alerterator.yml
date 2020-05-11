@@ -24,8 +24,8 @@ spec:
 
     - alert: Høy andel HTTP serverfeil (5xx responser)
       severity: danger
-      expr: floor(increase(ktor_http_server_requests_seconds_count{result="failure", status=~"5.*", app="{{app}}"}[5m])) > 1
-      for: 3m
+      expr: floor(increase(ktor_http_server_requests_seconds_count{result="failure", status=~"5.*", app="{{app}}"}[3m])) > 1
+      for: 2m
       description: "Følgende request feilet: `Status \{{ $labels.status }} - \{{ $labels.method }} \{{ $labels.route }}`.\n
                     Grunn: \{{ $labels.invalid_parameters }}.\n
                     Sjekk loggene for å se hvorfor dette feiler."
@@ -33,8 +33,8 @@ spec:
 
     - alert: Høy andel HTTP klientfeil (4xx responser)
       severity: warning
-      expr: floor(increase(ktor_http_server_requests_seconds_count{result="failure", status=~"4.*", status!~"404|401", app="{{app}}"}[5m])) > 0
-      for: 3m
+      expr: floor(increase(ktor_http_server_requests_seconds_count{result="failure", status=~"4.*", status!~"404|401", app="{{app}}"}[3m])) > 0
+      for: 2m
       description: "Følgende request feilet: `Status \{{ $labels.status }} - \{{ $labels.method }} \{{ $labels.route }}`.\n
                     Grunn: \{{ $labels.invalid_parameters }}.\n
                     Sjekk loggene for å se hvorfor dette feiler."
