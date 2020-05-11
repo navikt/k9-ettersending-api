@@ -265,7 +265,7 @@ fun MicrometerMetrics.Configuration.init(
             }
         )
         val problemDetails = call.response.headers["invalid-parameters"]
-        tag("invalid-parameters",
+        tag("invalid_parameters",
             if (problemDetails != null) {
                 problemDetails
             } else "n/a"
