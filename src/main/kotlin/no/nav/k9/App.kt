@@ -1,6 +1,8 @@
 package no.nav.k9
 
 import com.auth0.jwk.JwkProviderBuilder
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -35,7 +37,6 @@ import no.nav.helse.dusseldorf.ktor.core.*
 import no.nav.helse.dusseldorf.ktor.health.HealthReporter
 import no.nav.helse.dusseldorf.ktor.health.HealthRoute
 import no.nav.helse.dusseldorf.ktor.health.HealthService
-import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.k9.ettersending.EttersendingService
@@ -123,9 +124,9 @@ fun Application.k9EttersendingApi() {
 
     install(StatusPages) {
         DefaultStatusPages()
-        CustomStatusPages()
         JacksonStatusPages()
         authorizationStatusPages()
+        CustomStatusPages()
     }
 
     install(Locations)
@@ -241,7 +242,7 @@ fun StatusPages.Configuration.CustomStatusPages() {
 
     exception<Throwable> { cause ->
         if (cause is Problem) {
-            call.response.header("invalid-parameters", cause.getProblemDetails().asMap().toString())
+            call.response.header("invalid-parameters", invalidParametersSomString(cause as Throwblem))
             call.respondProblemDetails(cause.getProblemDetails(), logger)
         }
     }
@@ -270,6 +271,44 @@ fun MicrometerMetrics.Configuration.init(
                 problemDetails
             } else "n/a"
         )
+    }
+}
+
+fun StatusPages.Configuration.JacksonStatusPages() {
+
+    exception<JsonMappingException> { cause ->
+        val violations= mutableSetOf<Violation>()
+        cause.path.filter { it.fieldName != null }.forEach {
+            violations.add(
+                Violation(
+                    parameterType = ParameterType.ENTITY,
+                    parameterName = it.fieldName,
+                    reason = "Må være satt.",
+                    invalidValue = null
+
+                )
+            )
+        }
+
+        val problemDetails = ValidationProblemDetails(violations)
+
+        logger.debug("Feil ved mapping av JSON", cause)
+
+        call.response.header("invalid-parameters", invalidParametersSomString(cause as Throwblem))
+        call.respondProblemDetails(problemDetails, logger)
+    }
+
+    exception<JsonProcessingException> { cause ->
+
+        val problemDetails = DefaultProblemDetails(
+            title = "invalid-json-entity",
+            status = 400,
+            detail = "Request entityen inneholder ugyldig JSON."
+        )
+        logger.debug("Feil ved prosessering av JSON", cause)
+
+        call.response.header("invalid-parameters", invalidParametersSomString(cause as Throwblem))
+        call.respondProblemDetails(problemDetails, logger)
     }
 }
 

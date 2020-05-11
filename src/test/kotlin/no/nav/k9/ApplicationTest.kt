@@ -25,6 +25,7 @@ import java.time.Duration
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 
@@ -467,7 +468,7 @@ class ApplicationTest {
                 assertEquals(expectedCode, response.status())
                 if (expectedResponse != null) {
                     JSONAssert.assertEquals(expectedResponse, response.content!!, true)
-                    //assertEquals("sss", response.headers["problem-details"])
+                    //assertNotNull(response.headers["problem-details"])
                 } else {
                     assertEquals(expectedResponse, response.content)
                 }
