@@ -55,6 +55,7 @@ import no.nav.k9.ettersending.ettersendingApis
 import no.nav.k9.vedlegg.K9DokumentGateway
 import no.nav.k9.vedlegg.VedleggService
 import no.nav.k9.vedlegg.vedleggApis
+import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -312,7 +313,7 @@ suspend fun ApplicationCall.respondProblemDetails(
 ) {
     val map = problemDetails.asMap()
     logger?.info("ProblemDetails='$map'")
-    attributes.put(AttributeKey("problem-details"), problemDetails.asMap())
+    attributes.put(AttributeKey("problem-details"), JSONObject(problemDetails.asMap()).toString())
     respond(
         status = HttpStatusCode.fromValue(problemDetails.status),
         message = map
