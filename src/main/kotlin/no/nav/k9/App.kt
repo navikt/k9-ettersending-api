@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
@@ -20,7 +19,6 @@ import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.request.receive
 import io.ktor.response.header
 import io.ktor.routing.Routing
 import io.ktor.util.KtorExperimentalAPI
@@ -265,12 +263,7 @@ fun MicrometerMetrics.Configuration.init(
                 else -> "failure"
             }
         )
-        val problemDetails = call.response.headers["invalid-parameters"]
-        tag("invalid_parameters",
-            if (problemDetails != null) {
-                problemDetails
-            } else "n/a"
-        )
+        tag("invalid_parameters", call.response.headers["invalid-parameters"] ?: "n/a")
     }
 }
 
