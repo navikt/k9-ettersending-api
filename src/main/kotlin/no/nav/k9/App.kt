@@ -20,7 +20,9 @@ import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.response.header
+import io.ktor.response.respond
 import io.ktor.routing.Routing
+import io.ktor.util.AttributeKey
 import io.ktor.util.KtorExperimentalAPI
 import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
@@ -231,6 +233,8 @@ fun Application.k9EttersendingApi() {
     }
 }
 
+
+
 fun StatusPages.Configuration.CustomStatusPages() {
 
     exception<Throwblem> { cause ->
@@ -263,7 +267,8 @@ fun MicrometerMetrics.Configuration.init(
                 else -> "failure"
             }
         )
-        tag("invalid_parameters", call.response.headers["invalid-parameters"] ?: "n/a")
+        val problemDetails: String? = call.attributes.getOrNull(AttributeKey("problem_details"))
+        if (!problemDetails.isNullOrBlank()) tag("problem-details", problemDetails)
     }
 }
 
@@ -286,8 +291,6 @@ fun StatusPages.Configuration.JacksonStatusPages() {
         val problemDetails = ValidationProblemDetails(violations)
 
         logger.debug("Feil ved mapping av JSON", cause)
-
-        call.response.header("invalid-parameters", problemDetails.asMap()["invalid_parameters"].toString())
         call.respondProblemDetails(problemDetails, logger)
     }
 
@@ -299,10 +302,21 @@ fun StatusPages.Configuration.JacksonStatusPages() {
             detail = "Request entityen inneholder ugyldig JSON."
         )
         logger.debug("Feil ved prosessering av JSON", cause)
-
-        call.response.header("invalid-parameters", problemDetails.asMap()["invalid_parameters"].toString())
         call.respondProblemDetails(problemDetails, logger)
     }
+}
+
+suspend fun ApplicationCall.respondProblemDetails(
+    problemDetails: ProblemDetails,
+    logger: Logger? = null
+) {
+    val map = problemDetails.asMap()
+    logger?.info("ProblemDetails='$map'")
+    attributes.put(AttributeKey("problem-details"), problemDetails.asMap())
+    respond(
+        status = HttpStatusCode.fromValue(problemDetails.status),
+        message = map
+    )
 }
 
 private fun HttpStatusCode.isSuccessOrRedirect() = value in (200 until 400)
