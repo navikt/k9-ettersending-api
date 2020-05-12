@@ -19,7 +19,6 @@ import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.util.AttributeKey
@@ -40,6 +39,7 @@ import no.nav.helse.dusseldorf.ktor.health.HealthService
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.k9.ettersending.EttersendingService
+import no.nav.k9.ettersending.ettersendingApis
 import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.auth.authorizationStatusPages
 import no.nav.k9.general.systemauth.AccessTokenClientResolver
@@ -51,7 +51,6 @@ import no.nav.k9.redis.RedisStore
 import no.nav.k9.soker.SøkerGateway
 import no.nav.k9.soker.SøkerService
 import no.nav.k9.soker.søkerApis
-import no.nav.k9.ettersending.ettersendingApis
 import no.nav.k9.vedlegg.K9DokumentGateway
 import no.nav.k9.vedlegg.VedleggService
 import no.nav.k9.vedlegg.vedleggApis
@@ -61,7 +60,7 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
-fun main(args: Array<String>): Unit  = io.ktor.server.netty.EngineMain.main(args)
+fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 private val logger: Logger = LoggerFactory.getLogger("nav.k9EttersendingApi")
 
@@ -167,9 +166,12 @@ fun Application.k9EttersendingApi() {
                 mellomlagringService = MellomlagringService(
                     RedisStore(
                         RedisConfig(
-                        RedisConfigurationProperties(
-                            configuration.getRedisHost().equals("localhost"))
-                        ).redisClient(configuration)), configuration.getStoragePassphrase()),
+                            RedisConfigurationProperties(
+                                configuration.getRedisHost().equals("localhost")
+                            )
+                        ).redisClient(configuration)
+                    ), configuration.getStoragePassphrase()
+                ),
                 idTokenProvider = idTokenProvider
             )
 
@@ -191,11 +193,25 @@ fun Application.k9EttersendingApi() {
         val healthService = HealthService(
             healthChecks = setOf(
                 k9EttersendingMottakGateway,
-                HttpRequestHealthCheck(mapOf(
-                    configuration.getJwksUrl() to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, includeExpectedStatusEntity = false),
-                    Url.buildURL(baseUrl = configuration.getK9DokumentUrl(), pathParts = listOf("health")) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK),
-                    Url.buildURL(baseUrl = configuration.getK9EttersendingMottakBaseUrl(), pathParts = listOf("health")) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, httpHeaders = mapOf(apiGatewayApiKey.headerKey to apiGatewayApiKey.value))
-                ))
+                HttpRequestHealthCheck(
+                    mapOf(
+                        configuration.getJwksUrl() to HttpRequestHealthConfig(
+                            expectedStatus = HttpStatusCode.OK,
+                            includeExpectedStatusEntity = false
+                        ),
+                        Url.buildURL(
+                            baseUrl = configuration.getK9DokumentUrl(),
+                            pathParts = listOf("health")
+                        ) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK),
+                        Url.buildURL(
+                            baseUrl = configuration.getK9EttersendingMottakBaseUrl(),
+                            pathParts = listOf("health")
+                        ) to HttpRequestHealthConfig(
+                            expectedStatus = HttpStatusCode.OK,
+                            httpHeaders = mapOf(apiGatewayApiKey.headerKey to apiGatewayApiKey.value)
+                        )
+                    )
+                )
             )
         )
 
@@ -228,31 +244,29 @@ fun Application.k9EttersendingApi() {
         correlationIdAndRequestIdInMdc()
         logRequests()
         mdc("id_token_jti") { call ->
-            try { idTokenProvider.getIdToken(call).getId() }
-            catch (cause: Throwable) { null }
+            try {
+                idTokenProvider.getIdToken(call).getId()
+            } catch (cause: Throwable) {
+                null
+            }
         }
     }
 }
 
-
-
 fun StatusPages.Configuration.CustomStatusPages() {
 
     exception<Throwblem> { cause ->
-        call.response.header("invalid-parameters", invalidParametersSomString(cause))
-        call.respondProblemDetails(cause.getProblemDetails() , logger)
+        call.respondProblemDetails(cause.getProblemDetails(), logger)
     }
 
     exception<Throwable> { cause ->
         if (cause is Problem) {
-            call.response.header("invalid-parameters", invalidParametersSomString(cause as Throwblem))
             call.respondProblemDetails(cause.getProblemDetails(), logger)
         }
     }
 }
 
-private fun invalidParametersSomString(cause: Throwblem): String = cause.getProblemDetails().asMap()["invalid_parameters"].toString()
-
+@KtorExperimentalAPI
 fun MicrometerMetrics.Configuration.init(
     app: String,
     collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
@@ -260,7 +274,8 @@ fun MicrometerMetrics.Configuration.init(
     registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, collectorRegistry, Clock.SYSTEM)
     timers { call, throwable ->
         tag("app", app)
-        tag("result",
+        tag(
+            "result",
             when {
                 throwable != null -> "failure"
                 call.response.status() == null -> "failure"
@@ -268,15 +283,23 @@ fun MicrometerMetrics.Configuration.init(
                 else -> "failure"
             }
         )
-        val problemDetails: String? = call.attributes.getOrNull(AttributeKey("problem_details"))
-        if (!problemDetails.isNullOrBlank()) tag("problem-details", problemDetails)
+        tag("problem_details", call.resolveProblemDetailsTag())
     }
 }
+
+private fun ApplicationCall.resolveProblemDetailsTag(): String =
+    when (val problemDetailsKey = attributes.allKeys.filter { it.name == "problem-details" }.firstOrNull()) {
+        null -> "n/a"
+        else -> {
+            @Suppress("UNCHECKED_CAST")
+            attributes[problemDetailsKey as AttributeKey<String>]
+        }
+    }
 
 fun StatusPages.Configuration.JacksonStatusPages() {
 
     exception<JsonMappingException> { cause ->
-        val violations= mutableSetOf<Violation>()
+        val violations = mutableSetOf<Violation>()
         cause.path.filter { it.fieldName != null }.forEach {
             violations.add(
                 Violation(
@@ -313,7 +336,7 @@ suspend fun ApplicationCall.respondProblemDetails(
 ) {
     val map = problemDetails.asMap()
     logger?.info("ProblemDetails='$map'")
-    attributes.put(AttributeKey("problem-details"), JSONObject(problemDetails.asMap()).toString())
+    attributes.put(AttributeKey<String>("problem-details"), JSONObject(problemDetails.asMap()).toString())
     respond(
         status = HttpStatusCode.fromValue(problemDetails.status),
         message = map
