@@ -12,12 +12,14 @@ spec:
       prependText: "{{{slack-notify-type}}}"
   alerts:
     - alert: Applikasjon nede
+      severity: danger
       expr: up{app="{{app}}", job="kubernetes-pods"} == 0
       for: 2m
       description: "App \{{ $labels.app }} er nede i namespace \{{ $labels.kubernetes_namespace }}"
       action: "`kubectl describe pod \{{ $labels.kubernetes_pod_name }} -n \{{ $labels.kubernetes_namespace }}` for events, og `kubectl logs \{{ $labels.kubernetes_pod_name }} -n \{{ $labels.kubernetes_namespace }}` for logger"
 
     - alert: høy feilrate i logger
+      severity: danger
       expr: (100 * sum by (log_app, log_namespace) (rate(logd_messages_total{log_app="{{app}}",log_level=~"Warning|Error"}[3m])) / sum by (log_app, log_namespace) (rate(logd_messages_total{log_app="{{app}}"}[3m]))) > 10
       for: 3m
       action: "Sjekk loggene til app \{{ $labels.log_app }} i namespace \{{ $labels.log_namespace }}, for å se hvorfor det er så mye feil"
@@ -42,5 +44,7 @@ spec:
 
     - alert: Helsesjekk feiler
       expr: health_check_status{app="{{app}}"} > 0
+      severity: warning
       for: 2m
-      action: "Sjekk loggene for å se hvorfor helsesjekken feiler. `kubectl logs \{{ $labels.kubernetes_pod_name }} -n \{{ $labels.kubernetes_namespace }}`"
+      desription: "Sjekk loggene for å se hvorfor helsesjekken feiler.`"
+      action: "`kubectl logs \{{ $labels.kubernetes_pod_name }} -n \{{ $labels.kubernetes_namespace }}`"
