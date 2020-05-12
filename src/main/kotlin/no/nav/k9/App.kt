@@ -1,8 +1,6 @@
 package no.nav.k9
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -19,14 +17,8 @@ import io.ktor.jackson.jackson
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.response.respond
 import io.ktor.routing.Routing
-import io.ktor.util.AttributeKey
 import io.ktor.util.KtorExperimentalAPI
-import io.micrometer.core.instrument.Clock
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
-import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dusseldorf.ktor.auth.clients
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
@@ -36,8 +28,10 @@ import no.nav.helse.dusseldorf.ktor.core.*
 import no.nav.helse.dusseldorf.ktor.health.HealthReporter
 import no.nav.helse.dusseldorf.ktor.health.HealthRoute
 import no.nav.helse.dusseldorf.ktor.health.HealthService
+import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
+import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.ettersending.EttersendingService
 import no.nav.k9.ettersending.ettersendingApis
 import no.nav.k9.general.auth.IdTokenProvider
@@ -54,7 +48,6 @@ import no.nav.k9.soker.søkerApis
 import no.nav.k9.vedlegg.K9DokumentGateway
 import no.nav.k9.vedlegg.VedleggService
 import no.nav.k9.vedlegg.vedleggApis
-import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -123,9 +116,8 @@ fun Application.k9EttersendingApi() {
     }
 
     install(StatusPages) {
-        //DefaultStatusPages()
+        DefaultStatusPages()
         JacksonStatusPages()
-        CustomStatusPages()
         authorizationStatusPages()
     }
 
@@ -252,98 +244,6 @@ fun Application.k9EttersendingApi() {
         }
     }
 }
-
-fun StatusPages.Configuration.CustomStatusPages() {
-
-    exception<Throwblem> { cause ->
-        call.respondProblemDetails(cause.getProblemDetails(), logger)
-    }
-
-    exception<Throwable> { cause ->
-        if (cause is Problem) {
-            call.respondProblemDetails(cause.getProblemDetails(), logger)
-        }
-    }
-}
-
-@KtorExperimentalAPI
-fun MicrometerMetrics.Configuration.init(
-    app: String,
-    collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
-) {
-    registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, collectorRegistry, Clock.SYSTEM)
-    timers { call, throwable ->
-        tag("app", app)
-        tag(
-            "result",
-            when {
-                throwable != null -> "failure"
-                call.response.status() == null -> "failure"
-                call.response.status()!!.isSuccessOrRedirect() -> "success"
-                else -> "failure"
-            }
-        )
-        tag("problem_details", call.resolveProblemDetailsTag())
-    }
-}
-
-private fun ApplicationCall.resolveProblemDetailsTag(): String =
-    when (val problemDetailsKey = attributes.allKeys.filter { it.name == "problem-details" }.firstOrNull()) {
-        null -> "n/a"
-        else -> {
-            @Suppress("UNCHECKED_CAST")
-            attributes[problemDetailsKey as AttributeKey<String>]
-        }
-    }
-
-fun StatusPages.Configuration.JacksonStatusPages() {
-
-    exception<JsonMappingException> { cause ->
-        val violations = mutableSetOf<Violation>()
-        cause.path.filter { it.fieldName != null }.forEach {
-            violations.add(
-                Violation(
-                    parameterType = ParameterType.ENTITY,
-                    parameterName = it.fieldName,
-                    reason = "Må være satt.",
-                    invalidValue = null
-
-                )
-            )
-        }
-
-        val problemDetails = ValidationProblemDetails(violations)
-
-        logger.debug("Feil ved mapping av JSON", cause)
-        call.respondProblemDetails(problemDetails, logger)
-    }
-
-    exception<JsonProcessingException> { cause ->
-
-        val problemDetails = DefaultProblemDetails(
-            title = "invalid-json-entity",
-            status = 400,
-            detail = "Request entityen inneholder ugyldig JSON."
-        )
-        logger.debug("Feil ved prosessering av JSON", cause)
-        call.respondProblemDetails(problemDetails, logger)
-    }
-}
-
-suspend fun ApplicationCall.respondProblemDetails(
-    problemDetails: ProblemDetails,
-    logger: Logger? = null
-) {
-    val map = problemDetails.asMap()
-    logger?.info("ProblemDetails='$map'")
-    attributes.put(AttributeKey<String>("problem-details"), JSONObject(problemDetails.asMap()).toString())
-    respond(
-        status = HttpStatusCode.fromValue(problemDetails.status),
-        message = map
-    )
-}
-
-private fun HttpStatusCode.isSuccessOrRedirect() = value in (200 until 400)
 
 internal fun ObjectMapper.k9EttersendingKonfiguert() = dusseldorfConfigured()
     .setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
