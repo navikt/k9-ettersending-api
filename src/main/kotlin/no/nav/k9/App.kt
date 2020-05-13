@@ -33,6 +33,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.ettersending.EttersendingService
+import no.nav.k9.ettersending.ettersendingApis
 import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.auth.authorizationStatusPages
 import no.nav.k9.general.systemauth.AccessTokenClientResolver
@@ -44,7 +45,6 @@ import no.nav.k9.redis.RedisStore
 import no.nav.k9.soker.SøkerGateway
 import no.nav.k9.soker.SøkerService
 import no.nav.k9.soker.søkerApis
-import no.nav.k9.ettersending.ettersendingApis
 import no.nav.k9.vedlegg.K9DokumentGateway
 import no.nav.k9.vedlegg.VedleggService
 import no.nav.k9.vedlegg.vedleggApis
@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
-fun main(args: Array<String>): Unit  = io.ktor.server.netty.EngineMain.main(args)
+fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 private val logger: Logger = LoggerFactory.getLogger("nav.k9EttersendingApi")
 
@@ -158,9 +158,12 @@ fun Application.k9EttersendingApi() {
                 mellomlagringService = MellomlagringService(
                     RedisStore(
                         RedisConfig(
-                        RedisConfigurationProperties(
-                            configuration.getRedisHost().equals("localhost"))
-                        ).redisClient(configuration)), configuration.getStoragePassphrase()),
+                            RedisConfigurationProperties(
+                                configuration.getRedisHost().equals("localhost")
+                            )
+                        ).redisClient(configuration)
+                    ), configuration.getStoragePassphrase()
+                ),
                 idTokenProvider = idTokenProvider
             )
 
@@ -182,11 +185,25 @@ fun Application.k9EttersendingApi() {
         val healthService = HealthService(
             healthChecks = setOf(
                 k9EttersendingMottakGateway,
-                HttpRequestHealthCheck(mapOf(
-                    configuration.getJwksUrl() to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, includeExpectedStatusEntity = false),
-                    Url.buildURL(baseUrl = configuration.getK9DokumentUrl(), pathParts = listOf("health")) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK),
-                    Url.buildURL(baseUrl = configuration.getK9EttersendingMottakBaseUrl(), pathParts = listOf("health")) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK, httpHeaders = mapOf(apiGatewayApiKey.headerKey to apiGatewayApiKey.value))
-                ))
+                HttpRequestHealthCheck(
+                    mapOf(
+                        configuration.getJwksUrl() to HttpRequestHealthConfig(
+                            expectedStatus = HttpStatusCode.OK,
+                            includeExpectedStatusEntity = false
+                        ),
+                        Url.buildURL(
+                            baseUrl = configuration.getK9DokumentUrl(),
+                            pathParts = listOf("health")
+                        ) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK),
+                        Url.buildURL(
+                            baseUrl = configuration.getK9EttersendingMottakBaseUrl(),
+                            pathParts = listOf("health")
+                        ) to HttpRequestHealthConfig(
+                            expectedStatus = HttpStatusCode.OK,
+                            httpHeaders = mapOf(apiGatewayApiKey.headerKey to apiGatewayApiKey.value)
+                        )
+                    )
+                )
             )
         )
 
@@ -219,8 +236,11 @@ fun Application.k9EttersendingApi() {
         correlationIdAndRequestIdInMdc()
         logRequests()
         mdc("id_token_jti") { call ->
-            try { idTokenProvider.getIdToken(call).getId() }
-            catch (cause: Throwable) { null }
+            try {
+                idTokenProvider.getIdToken(call).getId()
+            } catch (cause: Throwable) {
+                null
+            }
         }
     }
 }
