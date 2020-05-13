@@ -1,9 +1,11 @@
 package no.nav.k9
 
 import com.auth0.jwk.JwkProviderBuilder
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
@@ -245,6 +247,18 @@ fun Application.k9EttersendingApi() {
     }
 }
 
-internal fun ObjectMapper.k9EttersendingKonfiguert() = dusseldorfConfigured()
-    .setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
-    .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
+internal fun ObjectMapper.k9EttersendingKonfiguert() = dusseldorfConfigured().apply {
+    configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
+}
+
+internal fun ObjectMapper.k9DokumentKonfigurert() = dusseldorfConfigured().apply {
+    configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
+    propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE
+}
+
+internal fun ObjectMapper.k9SelvbetjeningOppslagKonfigurert(): ObjectMapper {
+    return dusseldorfConfigured().apply {
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        registerModule(JavaTimeModule())
+    }
+}

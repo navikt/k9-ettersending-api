@@ -1,6 +1,7 @@
 package no.nav.k9.soker
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -8,11 +9,13 @@ import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import io.ktor.http.Url
 import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.Retry
+import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.general.CallId
 import no.nav.k9.general.auth.ApiGatewayApiKey
 import no.nav.k9.general.auth.IdToken
 import no.nav.k9.general.oppslag.K9OppslagGateway
+import no.nav.k9.k9SelvbetjeningOppslagKonfigurert
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -27,10 +30,7 @@ class SøkerGateway (
     private companion object {
         private val logger: Logger = LoggerFactory.getLogger("nav.SokerGateway")
         private const val HENTE_SOKER_OPERATION = "hente-soker"
-        private val objectMapper = jacksonObjectMapper().apply {
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            registerModule(JavaTimeModule())
-        }
+        private val objectMapper = jacksonObjectMapper().k9SelvbetjeningOppslagKonfigurert()
         private val attributter = Pair("a", listOf("aktør_id", "fornavn", "mellomnavn", "etternavn", "fødselsdato"))
     }
 

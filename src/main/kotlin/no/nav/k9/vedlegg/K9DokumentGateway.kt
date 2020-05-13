@@ -1,6 +1,5 @@
 package no.nav.k9.vedlegg
 
-import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.Request
@@ -12,10 +11,10 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
 import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.Retry.Companion.retry
-import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.Operation.Companion.monitored
 import no.nav.k9.general.CallId
 import no.nav.k9.general.auth.IdToken
+import no.nav.k9.k9DokumentKonfigurert
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
@@ -28,7 +27,7 @@ class K9DokumentGateway(
 
     private companion object {
         private val logger: Logger = LoggerFactory.getLogger(K9DokumentGateway::class.java)
-        private val objectMapper = jacksonObjectMapper().dusseldorfConfigured().configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
+        private val objectMapper = jacksonObjectMapper().k9DokumentKonfigurert()
         private const val SLETTE_VEDLEGG_OPERATION = "slette-vedlegg"
         private const val HENTE_VEDLEGG_OPERATION = "hente-vedlegg"
         private const val LAGRE_VEDLEGG_OPERATION = "lagre-vedlegg"
