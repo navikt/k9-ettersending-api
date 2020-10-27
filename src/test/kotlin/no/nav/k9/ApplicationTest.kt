@@ -180,6 +180,17 @@ class ApplicationTest {
     }
 
     @Test
+    fun `Hente soeker med tilgangsnivå 3`() {
+        requestAndAssert(
+            httpMethod = HttpMethod.Get,
+            path = "/soker",
+            cookie = getAuthCookie(fnr = fnr, level = 3),
+            expectedCode = HttpStatusCode.Forbidden,
+            expectedResponse = null
+        )
+    }
+
+    @Test
     fun `Hente søker som ikke er myndig`() {
         requestAndAssert(
             httpMethod = HttpMethod.Get,
@@ -290,8 +301,7 @@ class ApplicationTest {
                     {
                       "type": "entity",
                       "name": "språk",
-                      "reason": "Må være satt.",
-                      "invalid_value": null
+                      "reason": "Må være satt."
                     }
                   ]
                 }
