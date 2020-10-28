@@ -301,7 +301,8 @@ class ApplicationTest {
                     {
                       "type": "entity",
                       "name": "språk",
-                      "reason": "Må være satt."
+                      "reason": "Må være satt.",
+                      "invalid_value": null
                     }
                   ]
                 }
