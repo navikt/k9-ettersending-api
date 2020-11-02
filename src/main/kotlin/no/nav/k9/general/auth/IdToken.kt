@@ -10,13 +10,6 @@ data class IdToken(val value: String) {
         throw IdTokenInvalidFormatException(this, cause)
     }
 
-    internal fun medValidertLevel(required: String) : IdToken {
-        val acr = jwt.getClaim("acr")
-        if (acr?.asString() == null) throw IdTokenInvalidFormatException(this)
-        return if (required == acr.asString()) this
-        else throw InsufficientAuthenticationLevelException(actualAcr = acr.asString(), requiredAcr = required)
-    }
-
     internal fun somHttpAuthHeader() : HttpAuthHeader = HttpAuthHeader.Single("Bearer", value)
 
     internal fun getId() : String? = jwt.id
