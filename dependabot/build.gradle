@@ -5,7 +5,7 @@ dependencies {
     compile 'no.nav.helse:dusseldorf-ktor-metrics:1.4.1.15e3c67'
     compile 'no.nav.helse:dusseldorf-ktor-health:1.4.1.15e3c67'
     compile 'no.nav.helse:dusseldorf-ktor-auth:1.4.1.15e3c67'
-    compile 'io.ktor:ktor-locations:1.4.1'
+    compile 'io.ktor:ktor-locations:1.4.3'
     compile 'no.nav.helse:dusseldorf-ktor-client:1.4.1.15e3c67'
     compile 'no.nav.helse:dusseldorf-oauth2-client:1.4.1.15e3c67'
     compile 'io.lettuce:lettuce-core:5.2.1.RELEASE'
