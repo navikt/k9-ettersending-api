@@ -1,10 +1,12 @@
 package no.nav.k9.mellomlagring
 
+import com.github.fppt.jedismock.RedisServer
 import com.typesafe.config.ConfigFactory
 import io.ktor.config.HoconApplicationConfig
 import io.ktor.util.KtorExperimentalAPI
 import no.nav.k9.Configuration
 import no.nav.k9.TestConfiguration
+import no.nav.k9.mellomlagring.MellomlagringTest.Companion.redisClient
 import no.nav.k9.redis.RedisConfig
 import no.nav.k9.redis.RedisConfigurationProperties
 import no.nav.k9.redis.RedisMockUtil
@@ -18,11 +20,15 @@ import kotlin.test.assertNotNull
 @KtorExperimentalAPI
 class MellomlagringTest {
     private companion object {
-        val redisClient = RedisConfig(RedisConfigurationProperties(true)).redisClient(
-            Configuration(
-                HoconApplicationConfig(ConfigFactory.parseMap(TestConfiguration.asMap()))
-            )
+        val redisServer: RedisServer = RedisServer
+            .newRedisServer(6379)
+            .started()
+
+        val redisClient = RedisConfig.redisClient(
+            redisHost = redisServer.host,
+            redisPort = redisServer.bindPort
         )
+
         val redisStore = RedisStore(
             redisClient
         )
@@ -35,7 +41,7 @@ class MellomlagringTest {
         @JvmStatic
         fun teardown() {
             redisClient.shutdown()
-            RedisMockUtil.stopRedisMocked()
+            redisServer.stop()
         }
     }
 

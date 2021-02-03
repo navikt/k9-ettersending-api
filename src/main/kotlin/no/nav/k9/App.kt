@@ -147,12 +147,12 @@ fun Application.k9EttersendingApi() {
             mellomlagringApis(
                 mellomlagringService = MellomlagringService(
                     RedisStore(
-                        RedisConfig(
-                            RedisConfigurationProperties(
-                                configuration.getRedisHost().equals("localhost")
-                            )
-                        ).redisClient(configuration)
-                    ), configuration.getStoragePassphrase()
+                        redisClient = RedisConfig.redisClient(
+                            redisHost = configuration.getRedisHost(),
+                            redisPort = configuration.getRedisPort()
+                        )
+                    ),
+                    passphrase = configuration.getStoragePassphrase(),
                 ),
                 idTokenProvider = idTokenProvider
             )
