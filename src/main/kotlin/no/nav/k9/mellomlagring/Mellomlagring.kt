@@ -9,10 +9,6 @@ import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.Route
 import no.nav.k9.general.auth.IdTokenProvider
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
-private val logger: Logger = LoggerFactory.getLogger("nav.soknadApis")
 
 @KtorExperimentalLocationsAPI
 fun Route.mellomlagringApis(
@@ -27,6 +23,13 @@ fun Route.mellomlagringApis(
         val midlertidigSøknad = call.receive<String>()
         val idToken = idTokenProvider.getIdToken(call)
         mellomlagringService.setMellomlagring(idToken.getSubject()!!, midlertidigSøknad)
+        call.respond(HttpStatusCode.NoContent)
+    }
+
+    put { _: mellomlagring ->
+        val midlertidigSøknad = call.receive<String>()
+        val idToken = idTokenProvider.getIdToken(call)
+        mellomlagringService.updateMellomlagring(idToken.getSubject()!!, midlertidigSøknad)
         call.respond(HttpStatusCode.NoContent)
     }
 
