@@ -1,11 +1,11 @@
 package no.nav.k9.ettersending
 
+import no.nav.k9.K9EttersendingMottakGateway
 import no.nav.k9.general.CallId
 import no.nav.k9.general.auth.IdToken
 import no.nav.k9.soker.Søker
 import no.nav.k9.soker.SøkerService
 import no.nav.k9.soker.validate
-import no.nav.k9.K9EttersendingMottakGateway
 import no.nav.k9.vedlegg.VedleggService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -54,7 +54,7 @@ class EttersendingService(
             harForståttRettigheterOgPlikter = ettersending.harForståttRettigheterOgPlikter,
             harBekreftetOpplysninger = ettersending.harBekreftetOpplysninger,
             beskrivelse = ettersending.beskrivelse,
-            søknadstype = ettersending.søknadstype.toLowerCase().trim()
+            søknadstype = ettersending.søknadstype
         )
 
         k9EttersendingMottakGateway.leggTilProsesseringEttersending(

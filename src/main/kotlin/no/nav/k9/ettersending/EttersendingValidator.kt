@@ -11,33 +11,8 @@ private val vedleggTooLargeProblemDetails = DefaultProblemDetails(
     detail = "Totale størreslsen på alle vedlegg overstiger maks på 24 MB."
 )
 
-private val GYLDIGE_SØKNADSTYPER = listOf("pleiepenger", "omsorgspenger")
-
 internal fun Ettersending.valider() {
     val violations: MutableSet<Violation> = mutableSetOf<Violation>()
-
-    if (!erGyldingSøknadstype()) {
-        violations.add(
-            Violation(
-                parameterName = "søknadstype",
-                parameterType = ParameterType.ENTITY,
-                reason = "Feil søknadstype. Kun 'omsorgspenger' er tillatt.",
-                invalidValue = søknadstype
-
-            )
-        )
-    }
-
-    if(søknadstype.isNullOrBlank()){
-        violations.add(
-            Violation(
-                parameterName = "Søknadstype",
-                parameterType = ParameterType.ENTITY,
-                reason = "Søknadstype kan ikke være tom eller blank",
-                invalidValue = søknadstype
-            )
-        )
-    }
 
     if(beskrivelse.isNullOrBlank()){
         violations.add(
@@ -73,12 +48,12 @@ internal fun Ettersending.valider() {
         )
     }
 
+    //TODO 23.03.2021 - Burde det være en validering på at det er minst et vedlegg? Ettersending uten vedlegg er vel ikke noe vits?
+
     if (violations.isNotEmpty()) {
         throw Throwblem(ValidationProblemDetails(violations))
     }
 }
-
-private fun Ettersending.erGyldingSøknadstype() = GYLDIGE_SØKNADSTYPER.contains(søknadstype.toLowerCase())
 
 internal fun List<Vedlegg>.validerVedlegg(vedleggUrler: List<URL>) {
     if (size != vedleggUrler.size) {

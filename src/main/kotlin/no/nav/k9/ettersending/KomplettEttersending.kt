@@ -12,5 +12,5 @@ data class KomplettEttersending (
     val harForståttRettigheterOgPlikter: Boolean,
     val harBekreftetOpplysninger: Boolean,
     val beskrivelse: String,
-    val søknadstype: String
+    val søknadstype: Søknadstype
 )
