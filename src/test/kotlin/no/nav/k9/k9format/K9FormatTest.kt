@@ -2,6 +2,7 @@ package no.nav.k9.k9format
 
 import no.nav.k9.EttersendingUtils
 import no.nav.k9.ettersendelse.Ettersendelse
+import no.nav.k9.ettersending.Søknadstype
 import org.junit.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import java.time.ZoneId
@@ -15,7 +16,10 @@ class K9FormatTest {
         val mottatt = ZonedDateTime.of(2020, 1, 2, 3, 4, 5, 6, ZoneId.of("UTC"))
         val søknadId = UUID.randomUUID().toString()
 
-        val ettersending = EttersendingUtils.gyldigEttersending.copy(søknadId = søknadId)
+        val ettersending = EttersendingUtils.gyldigEttersending.copy(
+            søknadId = søknadId,
+            søknadstype = Søknadstype.OMP_UTV_KS
+        )
         val k9Format = ettersending.tilK9Format(søker = EttersendingUtils.søker, mottatt = mottatt)
 
         val forventetK9Format = """
