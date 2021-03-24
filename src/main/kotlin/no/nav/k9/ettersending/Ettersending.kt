@@ -19,6 +19,7 @@ enum class Søknadstype{
     PLEIEPENGER_SYKT_BARN,
     @JsonAlias("omsorgspenger") //TODO 23.03.2021 - Alias for å støtte gammel versjon fra frontend
     OMP_UTV_KS, // Omsorgspenger utvidet rett - kronisk syke eller funksjonshemming.
-    OMP_UT, // Omsorgspenger utbetaling ytelse.
+    OMP_UT_SNF, // Omsorgspenger utbetaling SNF ytelse.
+    OMP_UT_ARBEIDSTAKER, // Omsorgspenger utbetaling arbeidstaker ytelse.
     OMP_UTV_MA // Omsorgspenger utvidet rett - midlertidig alene
 }

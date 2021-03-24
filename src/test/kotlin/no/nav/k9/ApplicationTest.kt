@@ -313,7 +313,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Sende gyldig ettersending som raw json for OMP_UT`() {
+    fun `Sende gyldig ettersending som raw json for OMP_UT_SNF`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
         val pdfUrl = engine.pdUrl(cookie)
@@ -324,7 +324,23 @@ class ApplicationTest {
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
             expectedResponse = null,
-            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UT")
+            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UT_SNF")
+        )
+    }
+
+    @Test
+    fun `Sende gyldig ettersending som raw json for OMP_UT_ARBEIDSTAKER`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            expectedResponse = null,
+            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UT_ARBEIDSTAKER")
         )
     }
 
