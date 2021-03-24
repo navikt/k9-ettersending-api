@@ -1,6 +1,7 @@
 package no.nav.k9.ettersending
 
 import no.nav.k9.K9EttersendingMottakGateway
+import no.nav.k9.ettersendelse.Ettersendelse
 import no.nav.k9.general.CallId
 import no.nav.k9.general.auth.IdToken
 import no.nav.k9.soker.Søker
@@ -23,6 +24,7 @@ class EttersendingService(
 
     suspend fun registrer(
         ettersending: Ettersending,
+        k9Format: Ettersendelse,
         idToken: IdToken,
         callId: CallId
     ){
@@ -51,10 +53,12 @@ class EttersendingService(
             språk = ettersending.språk,
             mottatt = ZonedDateTime.now(ZoneOffset.UTC),
             vedlegg = vedlegg,
+            søknadId = ettersending.søknadId,
             harForståttRettigheterOgPlikter = ettersending.harForståttRettigheterOgPlikter,
             harBekreftetOpplysninger = ettersending.harBekreftetOpplysninger,
             beskrivelse = ettersending.beskrivelse,
-            søknadstype = ettersending.søknadstype
+            søknadstype = ettersending.søknadstype,
+            k9Format = k9Format
         )
 
         k9EttersendingMottakGateway.leggTilProsesseringEttersending(

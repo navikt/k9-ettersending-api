@@ -1,23 +1,28 @@
 package no.nav.k9.ettersending
 
-import io.ktor.application.call
-import io.ktor.http.HttpStatusCode
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.post
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.routing.Route
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.locations.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
 import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.getCallId
+import no.nav.k9.k9format.tilK9Format
+import no.nav.k9.soker.Søker
+import no.nav.k9.soker.SøkerService
+import no.nav.k9.soker.validate
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 private val logger: Logger = LoggerFactory.getLogger("nav.ettersendingApis")
 
 @KtorExperimentalLocationsAPI
 fun Route.ettersendingApis(
     ettersendingService: EttersendingService,
+    søkerService: SøkerService,
     idTokenProvider: IdTokenProvider
 ) {
 
@@ -27,13 +32,24 @@ fun Route.ettersendingApis(
     post { _ : sendEttersending ->
         logger.trace("Mottatt ettersending. Mapper...")
         val ettersending = call.receive<Ettersending>()
-        logger.trace("Ettersending mappet. Validerer")
+        logger.trace("Ettersending mappet.")
+
+        val idToken = idTokenProvider.getIdToken(call)
+        val callId = call.getCallId()
+        val mottatt = ZonedDateTime.now(ZoneOffset.UTC)
+
+        val søker: Søker = søkerService.getSoker(idToken = idToken, callId = callId)
+        søker.validate()
+
+        logger.info("Mapper om til K9Format")
+        val k9Format = ettersending.tilK9Format(mottatt, søker)
 
         ettersending.valider()
         logger.trace("Validering OK. Registrerer ettersending.")
 
         ettersendingService.registrer(
             ettersending = ettersending,
+            k9Format = k9Format,
             callId = call.getCallId(),
             idToken = idTokenProvider.getIdToken(call)
         )

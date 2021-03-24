@@ -2,8 +2,10 @@ package no.nav.k9.ettersending
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import java.net.URL
+import java.util.*
 
 data class Ettersending(
+    val søknadId: String = UUID.randomUUID().toString(),
     val språk: String,
     val vedlegg: List<URL>,
     val harForståttRettigheterOgPlikter: Boolean,

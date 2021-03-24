@@ -5,6 +5,8 @@ val dusseldorfKtorVersion = "1.5.1.609bb61"
 val ktorVersion = ext.get("ktorVersion").toString()
 val mainClass = "no.nav.k9.AppKt"
 
+val k9FormatVersion = "5.1.21"
+
 plugins {
     kotlin("jvm") version "1.4.30"
     id("com.github.johnrengelman.shadow") version "6.1.0"
@@ -29,6 +31,9 @@ dependencies {
     implementation ( "no.nav.helse:dusseldorf-oauth2-client:$dusseldorfKtorVersion")
     implementation ("io.lettuce:lettuce-core:5.2.1.RELEASE")
     implementation("com.github.fppt:jedis-mock:0.1.16")
+
+    // K9-format
+    implementation ( "no.nav.k9:ettersendelse:$k9FormatVersion")
 
     // Test
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
