@@ -30,4 +30,9 @@ class EttersendingValidatorTest{
     fun `Skal feile dersom beskrivelse kun består av tomrom`(){
         EttersendingUtils.gyldigEttersending.copy(beskrivelse = "   ").valider()
     }
+
+    @Test(expected = Throwblem::class)
+    fun `Skal feile dersom søknaden har null vedlegg`(){
+        EttersendingUtils.gyldigEttersending.copy(vedlegg = listOf()).valider()
+    }
 }

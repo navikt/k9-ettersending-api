@@ -25,6 +25,17 @@ internal fun Ettersending.valider() {
         )
     }
 
+    if(vedlegg.isEmpty()){
+        violations.add(
+            Violation(
+                parameterName = "vedlegg",
+                parameterType = ParameterType.ENTITY,
+                reason = "Listen over vedlegg kan ikke være tom",
+                invalidValue = vedlegg
+            )
+        )
+    }
+
     if (!harBekreftetOpplysninger) {
         violations.add(
             Violation(
@@ -47,8 +58,6 @@ internal fun Ettersending.valider() {
             )
         )
     }
-
-    //TODO 23.03.2021 - Burde det være en validering på at det er minst et vedlegg? Ettersending uten vedlegg er vel ikke noe vits?
 
     if (violations.isNotEmpty()) {
         throw Throwblem(ValidationProblemDetails(violations))
