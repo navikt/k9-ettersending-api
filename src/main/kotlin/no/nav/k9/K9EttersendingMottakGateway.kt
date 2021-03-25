@@ -15,7 +15,6 @@ import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
-import no.nav.k9.ettersendelse.Ettersendelse
 import no.nav.k9.ettersending.KomplettEttersending
 import no.nav.k9.general.CallId
 import no.nav.k9.general.auth.ApiGatewayApiKey
@@ -63,8 +62,6 @@ class K9EttersendingMottakGateway(
 
         val body = objectMapper.writeValueAsBytes(ettersending)
         val contentStream = { ByteArrayInputStream(body) }
-
-        logger.info("K9Format som sendes videre fra API: ${Ettersendelse.SerDes.serialize(ettersending.k9Format)}") //TODO 24.03.2021 - Fjernes før prodsettes
 
         val httpRequet = komplettUrlEttersend
             .httpPost()
