@@ -5,7 +5,7 @@ val dusseldorfKtorVersion = "1.5.1.609bb61"
 val ktorVersion = ext.get("ktorVersion").toString()
 val mainClass = "no.nav.k9.AppKt"
 
-val k9FormatVersion = "5.1.21"
+val k9FormatVersion = "5.1.25"
 
 plugins {
     kotlin("jvm") version "1.4.30"

@@ -2,7 +2,7 @@ package no.nav.k9
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategy
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.application.*
@@ -68,7 +68,7 @@ fun Application.k9EttersendingApi() {
     install(ContentNegotiation) {
         jackson {
             dusseldorfConfigured()
-                .setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE)
+                .setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE)
                 .configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
         }
     }
@@ -234,7 +234,7 @@ internal fun ObjectMapper.k9EttersendingKonfiguert() = dusseldorfConfigured().ap
 
 internal fun ObjectMapper.k9DokumentKonfigurert() = dusseldorfConfigured().apply {
     configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
-    propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE
+    propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
 }
 
 internal fun ObjectMapper.k9SelvbetjeningOppslagKonfigurert(): ObjectMapper {
