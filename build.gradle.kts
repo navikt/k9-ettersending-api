@@ -8,7 +8,7 @@ val mainClass = "no.nav.k9.AppKt"
 val k9FormatVersion = "5.1.25"
 
 plugins {
-    kotlin("jvm") version "1.4.30"
+    kotlin("jvm") version "1.4.32"
     id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
