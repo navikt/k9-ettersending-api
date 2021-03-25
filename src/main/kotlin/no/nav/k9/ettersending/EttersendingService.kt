@@ -28,7 +28,7 @@ class EttersendingService(
         idToken: IdToken,
         callId: CallId
     ){
-        logger.info("Registrerer ettersending. Henter søker")
+        logger.info("Registrerer ettersending av typen ${ettersending.søknadstype.name}. Henter søker")
         val søker: Søker = søkerService.getSoker(idToken = idToken, callId = callId)
 
         logger.info("Søker hentet. Validerer søker.")
