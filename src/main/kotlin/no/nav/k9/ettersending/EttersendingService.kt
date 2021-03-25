@@ -1,11 +1,12 @@
 package no.nav.k9.ettersending
 
+import no.nav.k9.K9EttersendingMottakGateway
+import no.nav.k9.ettersendelse.Ettersendelse
 import no.nav.k9.general.CallId
 import no.nav.k9.general.auth.IdToken
 import no.nav.k9.soker.Søker
 import no.nav.k9.soker.SøkerService
 import no.nav.k9.soker.validate
-import no.nav.k9.K9EttersendingMottakGateway
 import no.nav.k9.vedlegg.VedleggService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,10 +24,11 @@ class EttersendingService(
 
     suspend fun registrer(
         ettersending: Ettersending,
+        k9Format: Ettersendelse,
         idToken: IdToken,
         callId: CallId
     ){
-        logger.info("Registrerer ettersending. Henter søker")
+        logger.info("Registrerer ettersending av typen ${ettersending.søknadstype.name}. Henter søker")
         val søker: Søker = søkerService.getSoker(idToken = idToken, callId = callId)
 
         logger.info("Søker hentet. Validerer søker.")
@@ -51,10 +53,12 @@ class EttersendingService(
             språk = ettersending.språk,
             mottatt = ZonedDateTime.now(ZoneOffset.UTC),
             vedlegg = vedlegg,
+            søknadId = ettersending.søknadId,
             harForståttRettigheterOgPlikter = ettersending.harForståttRettigheterOgPlikter,
             harBekreftetOpplysninger = ettersending.harBekreftetOpplysninger,
             beskrivelse = ettersending.beskrivelse,
-            søknadstype = ettersending.søknadstype.toLowerCase().trim()
+            søknadstype = ettersending.søknadstype,
+            k9Format = k9Format
         )
 
         k9EttersendingMottakGateway.leggTilProsesseringEttersending(

@@ -3,19 +3,15 @@ package no.nav.k9
 import com.github.fppt.jedismock.RedisServer
 import com.github.tomakehurst.wiremock.http.Cookie
 import com.typesafe.config.ConfigFactory
-import io.ktor.config.ApplicationConfig
-import io.ktor.config.HoconApplicationConfig
+import io.ktor.config.*
 import io.ktor.http.*
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.createTestEnvironment
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.server.testing.*
+import io.ktor.util.*
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import no.nav.helse.getAuthCookie
+import no.nav.k9.EttersendingUtils.gyldigEttersendingSomJson
 import no.nav.k9.mellomlagring.started
-import no.nav.k9.redis.RedisMockUtil
 import no.nav.k9.wiremock.*
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -23,17 +19,13 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL
-import java.time.Duration
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-
 
 private const val fnr = "290990123456"
 private const val ikkeMyndigFnr = "12125012345"
-private val oneMinuteInMillis = Duration.ofMinutes(1).toMillis()
 
 // Se https://github.com/navikt/dusseldorf-ktor#f%C3%B8dselsnummer
 private val gyldigFodselsnummerA = "02119970078"
@@ -127,7 +119,7 @@ class ApplicationTest {
             }""".trimIndent(),
             expectedCode = HttpStatusCode.BadRequest,
             cookie = cookie,
-            requestEntity = EttersendingUtils.defaultEttersending.copy(
+            requestEntity = EttersendingUtils.gyldigEttersending.copy(
                 vedlegg = listOf(
                     URL(jpegUrl), URL(finnesIkkeUrl)
                 )
@@ -141,7 +133,6 @@ class ApplicationTest {
             }
         }
     }
-
 
     @Test
     fun `test isready, isalive, health og metrics`() {
@@ -166,19 +157,19 @@ class ApplicationTest {
         fodselsdato: String = "1997-05-25",
         myndig: Boolean = true
     ) = """
-    {
-        "etternavn": "MORSEN",
-        "fornavn": "MOR",
-        "mellomnavn": "HEISANN",
-        "fødselsnummer": "$fodselsnummer",
-        "aktørId": "12345",
-        "fødselsdato": "$fodselsdato",
-        "myndig": $myndig
-    }
-""".trimIndent()
+            {
+                "etternavn": "MORSEN",
+                "fornavn": "MOR",
+                "mellomnavn": "HEISANN",
+                "fødselsnummer": "$fodselsnummer",
+                "aktørId": "12345",
+                "fødselsdato": "$fodselsdato",
+                "myndig": $myndig
+            }
+        """.trimIndent()
 
     @Test
-    fun `Hente soeker`() {
+    fun `Hente søker`() {
         requestAndAssert(
             httpMethod = HttpMethod.Get,
             path = "/soker",
@@ -188,7 +179,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Hente soeker med tilgangsnivå 3`() {
+    fun `Hente søker med tilgangsnivå 3`() {
         requestAndAssert(
             httpMethod = HttpMethod.Get,
             path = "/soker",
@@ -214,7 +205,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Test haandtering av vedlegg`() {
+    fun `Test håndtering av vedlegg`() {
         val cookie = getAuthCookie(fnr)
         val jpeg = "vedlegg/iPhone_6.jpg".fromResources().readBytes()
 
@@ -248,7 +239,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Test opplasting av ikke stottet vedleggformat`() {
+    fun `Test opplasting av ikke støttet vedleggformat`() {
         engine.handleRequestUploadImage(
             cookie = getAuthCookie(gyldigFodselsnummerA),
             vedlegg = "jwkset.json".fromResources().readBytes(),
@@ -281,11 +272,123 @@ class ApplicationTest {
             expectedResponse = null,
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
-            requestEntity = EttersendingUtils.defaultEttersending.copy(
+            requestEntity = EttersendingUtils.gyldigEttersending.copy(
                 vedlegg = listOf(
                     URL(jpegUrl), URL(pdfUrl)
                 )
             ).somJson()
+        )
+    }
+
+    @Test
+    fun `Sende gyldig ettersending som raw json for OMP_UTV_MA`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            expectedResponse = null,
+            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UTV_MA")
+        )
+    }
+
+    @Test
+    fun `Sende gyldig ettersending som raw json for OMP_UTV_KS`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            expectedResponse = null,
+            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UTV_KS")
+        )
+    }
+
+    @Test
+    fun `Sende gyldig ettersending som raw json for OMP_UT_SNF`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            expectedResponse = null,
+            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UT_SNF")
+        )
+    }
+
+    @Test
+    fun `Sende gyldig ettersending som raw json for OMP_UT_ARBEIDSTAKER`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            expectedResponse = null,
+            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UT_ARBEIDSTAKER")
+        )
+    }
+
+    @Test
+    fun `Sende gyldig ettersending som raw json for PLEIEPENGER_SYKT_BARN`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            expectedResponse = null,
+            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "PLEIEPENGER_SYKT_BARN")
+        )
+    }
+
+    @Test
+    fun `Sende gyldig ettersending som raw json for deprecated omsorgspenger`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            expectedResponse = null,
+            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "omsorgspenger")
+        )
+    }
+
+    @Test
+    fun `Sende gyldig ettersending som raw json for deprecated pleiepenger`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            expectedResponse = null,
+            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "pleiepenger")
         )
     }
 
@@ -363,7 +466,7 @@ class ApplicationTest {
             }""".trimIndent(),
             expectedCode = HttpStatusCode.BadRequest,
             cookie = cookie,
-            requestEntity = EttersendingUtils.defaultEttersending.copy(
+            requestEntity = EttersendingUtils.gyldigEttersending.copy(
                 vedlegg = listOf(
                     URL(jpegUrl), URL(finnesIkkeUrl)
                 )
@@ -372,7 +475,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Sende ettersending med tom beskrivelse og tom søknadstype`() {
+    fun `Sende ettersending med tom beskrivelse`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
         val pdfUrl = engine.pdUrl(cookie)
@@ -388,18 +491,6 @@ class ApplicationTest {
                   "detail": "Requesten inneholder ugyldige paramtere.",
                   "instance": "about:blank",
                   "invalid_parameters": [
-                      {
-                        "type": "entity",
-                        "name": "søknadstype",
-                        "reason": "Feil søknadstype. Kun 'omsorgspenger' er tillatt.",
-                        "invalid_value": ""
-                      },
-                    {
-                      "type": "entity",
-                      "name": "Søknadstype",
-                      "reason": "Søknadstype kan ikke være tom eller blank",
-                      "invalid_value": ""
-                    },
                     {
                       "type": "entity",
                       "name": "beskrivelse",
@@ -411,8 +502,7 @@ class ApplicationTest {
             """.trimIndent(),
             expectedCode = HttpStatusCode.BadRequest,
             cookie = cookie,
-            requestEntity = EttersendingUtils.defaultEttersending.copy(
-                søknadstype = "",
+            requestEntity = EttersendingUtils.gyldigEttersending.copy(
                 beskrivelse = "",
                 vedlegg = listOf(
                     URL(jpegUrl), URL(pdfUrl)
@@ -422,7 +512,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Sende ettersending med whitespace beskrivelse og whitespace søknadstype`() {
+    fun `Sende ettersending med whitespace beskrivelse`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
         val pdfUrl = engine.pdUrl(cookie)
@@ -438,18 +528,6 @@ class ApplicationTest {
                   "detail": "Requesten inneholder ugyldige paramtere.",
                   "instance": "about:blank",
                   "invalid_parameters": [
-                      {
-                        "type": "entity",
-                        "name": "søknadstype",
-                        "reason": "Feil søknadstype. Kun 'omsorgspenger' er tillatt.",
-                        "invalid_value": " "
-                      },
-                    {
-                      "type": "entity",
-                      "name": "Søknadstype",
-                      "reason": "Søknadstype kan ikke være tom eller blank",
-                      "invalid_value": " "
-                    },
                     {
                       "type": "entity",
                       "name": "beskrivelse",
@@ -461,8 +539,7 @@ class ApplicationTest {
             """.trimIndent(),
             expectedCode = HttpStatusCode.BadRequest,
             cookie = cookie,
-            requestEntity = EttersendingUtils.defaultEttersending.copy(
-                søknadstype = " ",
+            requestEntity = EttersendingUtils.gyldigEttersending.copy(
                 beskrivelse = " ",
                 vedlegg = listOf(
                     URL(jpegUrl), URL(pdfUrl)
@@ -471,43 +548,6 @@ class ApplicationTest {
         )
     }
 
-    @Test
-    fun `Sende ettersending hvor søknadstype ikke er pleiepenger eller omsorgspenger`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
-
-        requestAndAssert(
-            httpMethod = HttpMethod.Post,
-            path = "/ettersend",
-            expectedResponse = """
-                {
-                  "type": "/problem-details/invalid-request-parameters",
-                  "title": "invalid-request-parameters",
-                  "status": 400,
-                  "detail": "Requesten inneholder ugyldige paramtere.",
-                  "instance": "about:blank",
-                  "invalid_parameters": [
-                    {
-                      "type": "entity",
-                      "name": "søknadstype",
-                      "reason": "Feil søknadstype. Kun 'omsorgspenger' er tillatt.",
-                      "invalid_value": "koronapenger"
-                    }
-                  ]
-                }
-            """.trimIndent(),
-            expectedCode = HttpStatusCode.BadRequest,
-            cookie = cookie,
-            requestEntity = EttersendingUtils.defaultEttersending.copy(
-                søknadstype = "koronapenger",
-                beskrivelse = "blablabla",
-                vedlegg = listOf(
-                    URL(jpegUrl), URL(pdfUrl)
-                )
-            ).somJson()
-        )
-    }
 
     private fun requestAndAssert(
         httpMethod: HttpMethod,

@@ -11,33 +11,8 @@ private val vedleggTooLargeProblemDetails = DefaultProblemDetails(
     detail = "Totale størreslsen på alle vedlegg overstiger maks på 24 MB."
 )
 
-private val GYLDIGE_SØKNADSTYPER = listOf("pleiepenger", "omsorgspenger")
-
 internal fun Ettersending.valider() {
     val violations: MutableSet<Violation> = mutableSetOf<Violation>()
-
-    if (!erGyldingSøknadstype()) {
-        violations.add(
-            Violation(
-                parameterName = "søknadstype",
-                parameterType = ParameterType.ENTITY,
-                reason = "Feil søknadstype. Kun 'omsorgspenger' er tillatt.",
-                invalidValue = søknadstype
-
-            )
-        )
-    }
-
-    if(søknadstype.isNullOrBlank()){
-        violations.add(
-            Violation(
-                parameterName = "Søknadstype",
-                parameterType = ParameterType.ENTITY,
-                reason = "Søknadstype kan ikke være tom eller blank",
-                invalidValue = søknadstype
-            )
-        )
-    }
 
     if(beskrivelse.isNullOrBlank()){
         violations.add(
@@ -46,6 +21,17 @@ internal fun Ettersending.valider() {
                 parameterType = ParameterType.ENTITY,
                 reason = "Beskrivelse kan ikke være tom eller blank",
                 invalidValue = beskrivelse
+            )
+        )
+    }
+
+    if(vedlegg.isEmpty()){
+        violations.add(
+            Violation(
+                parameterName = "vedlegg",
+                parameterType = ParameterType.ENTITY,
+                reason = "Listen over vedlegg kan ikke være tom",
+                invalidValue = vedlegg
             )
         )
     }
@@ -77,8 +63,6 @@ internal fun Ettersending.valider() {
         throw Throwblem(ValidationProblemDetails(violations))
     }
 }
-
-private fun Ettersending.erGyldingSøknadstype() = GYLDIGE_SØKNADSTYPER.contains(søknadstype.toLowerCase())
 
 internal fun List<Vedlegg>.validerVedlegg(vedleggUrler: List<URL>) {
     if (size != vedleggUrler.size) {
