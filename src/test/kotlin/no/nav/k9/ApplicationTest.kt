@@ -282,6 +282,28 @@ class ApplicationTest {
     }
 
     @Test
+    fun `Sende full gyldig ettersending uten beskrivelse`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedResponse = null,
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            requestEntity = EttersendingUtils.gyldigEttersending.copy(
+                beskrivelse = null,
+                søknadstype = Søknadstype.OMP_UT_SNF,
+                vedlegg = listOf(
+                    URL(jpegUrl), URL(pdfUrl)
+                )
+            ).somJson()
+        )
+    }
+
+    @Test
     fun `Sende gyldig ettersending som raw json for OMP_UTV_MA`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
