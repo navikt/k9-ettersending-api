@@ -14,12 +14,12 @@ private val vedleggTooLargeProblemDetails = DefaultProblemDetails(
 internal fun Ettersending.valider() {
     val violations: MutableSet<Violation> = mutableSetOf<Violation>()
 
-    if(beskrivelse.isNullOrBlank()){
+    if(søknadstype == Søknadstype.PLEIEPENGER_SYKT_BARN && beskrivelse.isNullOrBlank()){
         violations.add(
             Violation(
                 parameterName = "beskrivelse",
                 parameterType = ParameterType.ENTITY,
-                reason = "Beskrivelse kan ikke være tom eller blank",
+                reason = "Beskrivelse kan ikke være tom eller blank dersom det gjelder pleiepenger sykt barn",
                 invalidValue = beskrivelse
             )
         )

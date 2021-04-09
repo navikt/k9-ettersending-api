@@ -1,6 +1,7 @@
 package no.nav.k9
 
 import no.nav.helse.dusseldorf.ktor.core.Throwblem
+import no.nav.k9.ettersending.Søknadstype
 import no.nav.k9.ettersending.valider
 import org.junit.Test
 
@@ -23,12 +24,12 @@ class EttersendingValidatorTest{
 
     @Test(expected = Throwblem::class)
     fun `Skal feile dersom beskrivelse er tom`(){
-        EttersendingUtils.gyldigEttersending.copy(beskrivelse = "").valider()
+        EttersendingUtils.gyldigEttersending.copy(beskrivelse = "", søknadstype = Søknadstype.PLEIEPENGER_SYKT_BARN).valider()
     }
 
     @Test(expected = Throwblem::class)
     fun `Skal feile dersom beskrivelse kun består av tomrom`(){
-        EttersendingUtils.gyldigEttersending.copy(beskrivelse = "   ").valider()
+        EttersendingUtils.gyldigEttersending.copy(beskrivelse = "   ", søknadstype = Søknadstype.PLEIEPENGER_SYKT_BARN).valider()
     }
 
     @Test(expected = Throwblem::class)
