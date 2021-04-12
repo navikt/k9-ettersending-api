@@ -34,6 +34,7 @@ dependencies {
 
     // K9-format
     implementation ( "no.nav.k9:ettersendelse:$k9FormatVersion")
+    implementation("org.glassfish:jakarta.el:3.0.3")
 
     // Test
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
@@ -46,9 +47,7 @@ dependencies {
 }
 
 repositories {
-    maven("https://dl.bintray.com/kotlin/ktor")
-    maven("https://kotlin.bintray.com/kotlinx")
-    maven("http://packages.confluent.io/maven/")
+    mavenLocal()
 
     maven {
         name = "GitHubPackages"
@@ -59,9 +58,12 @@ repositories {
         }
     }
 
-    jcenter()
-    mavenLocal()
     mavenCentral()
+    maven("https://jitpack.io")
+
+    maven("https://dl.bintray.com/kotlin/ktor")
+    maven("https://kotlin.bintray.com/kotlinx")
+    maven("http://packages.confluent.io/maven/")
 }
 
 
