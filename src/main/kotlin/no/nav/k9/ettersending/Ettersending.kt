@@ -10,7 +10,7 @@ data class Ettersending(
     val vedlegg: List<URL>,
     val harForståttRettigheterOgPlikter: Boolean,
     val harBekreftetOpplysninger: Boolean,
-    val beskrivelse: String,
+    val beskrivelse: String?,
     val søknadstype: Søknadstype
 )
 

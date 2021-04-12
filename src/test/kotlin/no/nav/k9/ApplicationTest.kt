@@ -11,6 +11,7 @@ import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import no.nav.helse.getAuthCookie
 import no.nav.k9.EttersendingUtils.gyldigEttersendingSomJson
+import no.nav.k9.ettersending.Søknadstype
 import no.nav.k9.mellomlagring.started
 import no.nav.k9.wiremock.*
 import org.junit.AfterClass
@@ -281,6 +282,28 @@ class ApplicationTest {
     }
 
     @Test
+    fun `Sende full gyldig ettersending uten beskrivelse`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedResponse = null,
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            requestEntity = EttersendingUtils.gyldigEttersending.copy(
+                beskrivelse = null,
+                søknadstype = Søknadstype.OMP_UT_SNF,
+                vedlegg = listOf(
+                    URL(jpegUrl), URL(pdfUrl)
+                )
+            ).somJson()
+        )
+    }
+
+    @Test
     fun `Sende gyldig ettersending som raw json for OMP_UTV_MA`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
@@ -475,7 +498,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Sende ettersending med tom beskrivelse`() {
+    fun `Sende ettersending for pleiepenger sykt barn med tom beskrivelse`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
         val pdfUrl = engine.pdUrl(cookie)
@@ -494,7 +517,7 @@ class ApplicationTest {
                     {
                       "type": "entity",
                       "name": "beskrivelse",
-                      "reason": "Beskrivelse kan ikke være tom eller blank",
+                      "reason": "Beskrivelse kan ikke være tom eller blank dersom det gjelder pleiepenger sykt barn",
                       "invalid_value": ""
                     }
                   ]
@@ -504,6 +527,7 @@ class ApplicationTest {
             cookie = cookie,
             requestEntity = EttersendingUtils.gyldigEttersending.copy(
                 beskrivelse = "",
+                søknadstype = Søknadstype.PLEIEPENGER_SYKT_BARN,
                 vedlegg = listOf(
                     URL(jpegUrl), URL(pdfUrl)
                 )
@@ -512,7 +536,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Sende ettersending med whitespace beskrivelse`() {
+    fun `Sende ettersending for pleiepenger sykt barn med whitespace beskrivelse`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
         val pdfUrl = engine.pdUrl(cookie)
@@ -531,7 +555,7 @@ class ApplicationTest {
                     {
                       "type": "entity",
                       "name": "beskrivelse",
-                      "reason": "Beskrivelse kan ikke være tom eller blank",
+                      "reason": "Beskrivelse kan ikke være tom eller blank dersom det gjelder pleiepenger sykt barn",
                       "invalid_value": " "
                     }
                   ]
@@ -541,6 +565,7 @@ class ApplicationTest {
             cookie = cookie,
             requestEntity = EttersendingUtils.gyldigEttersending.copy(
                 beskrivelse = " ",
+                søknadstype = Søknadstype.PLEIEPENGER_SYKT_BARN,
                 vedlegg = listOf(
                     URL(jpegUrl), URL(pdfUrl)
                 )
