@@ -1,11 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val dusseldorfKtorVersion = "1.5.2.1303b90"
+val dusseldorfKtorVersion = "1.5.3.9b6aed3"
 val ktorVersion = ext.get("ktorVersion").toString()
 val mainClass = "no.nav.k9.AppKt"
 
-val k9FormatVersion = "5.1.25"
+val k9FormatVersion = "5.1.33"
 
 plugins {
     kotlin("jvm") version "1.4.32"
@@ -14,7 +14,7 @@ plugins {
 
 buildscript {
     // Henter ut diverse dependency versjoner, i.e. ktorVersion.
-    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/1303b90c37ad3d94905c6eb7f6b47b6312d19aba/gradle/dusseldorf-ktor.gradle.kts")
+    apply("https://raw.githubusercontent.com/navikt/dusseldorf-ktor/9b6aed3c043a620c644f14fdccf0ab8b329e7025/gradle/dusseldorf-ktor.gradle.kts")
 }
 
 dependencies {
@@ -34,6 +34,7 @@ dependencies {
 
     // K9-format
     implementation ( "no.nav.k9:ettersendelse:$k9FormatVersion")
+    implementation("org.glassfish:jakarta.el:3.0.3")
 
     // Test
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
@@ -46,9 +47,7 @@ dependencies {
 }
 
 repositories {
-    maven("https://dl.bintray.com/kotlin/ktor")
-    maven("https://kotlin.bintray.com/kotlinx")
-    maven("http://packages.confluent.io/maven/")
+    mavenLocal()
 
     maven {
         name = "GitHubPackages"
@@ -59,9 +58,12 @@ repositories {
         }
     }
 
-    jcenter()
-    mavenLocal()
     mavenCentral()
+
+    maven("https://jitpack.io")
+    maven("https://dl.bintray.com/kotlin/ktor")
+    maven("https://kotlin.bintray.com/kotlinx")
+    maven("http://packages.confluent.io/maven/")
 }
 
 
@@ -92,5 +94,5 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "6.7"
+    gradleVersion = "6.8.3"
 }
