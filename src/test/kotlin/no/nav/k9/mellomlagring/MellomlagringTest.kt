@@ -21,7 +21,7 @@ class MellomlagringTest {
             .started()
 
         val redisClient = RedisConfig.redisClient(
-            redisHost = redisServer.host,
+            redisHost = "localhost",
             redisPort = redisServer.bindPort
         )
 
