@@ -1,15 +1,8 @@
 package no.nav.k9.mellomlagring
 
 import com.github.fppt.jedismock.RedisServer
-import com.typesafe.config.ConfigFactory
-import io.ktor.config.HoconApplicationConfig
-import io.ktor.util.KtorExperimentalAPI
-import no.nav.k9.Configuration
-import no.nav.k9.TestConfiguration
-import no.nav.k9.mellomlagring.MellomlagringTest.Companion.redisClient
+import io.ktor.util.*
 import no.nav.k9.redis.RedisConfig
-import no.nav.k9.redis.RedisConfigurationProperties
-import no.nav.k9.redis.RedisMockUtil
 import no.nav.k9.redis.RedisStore
 import org.awaitility.Awaitility
 import org.awaitility.Durations
@@ -24,11 +17,11 @@ class MellomlagringTest {
         val logger = LoggerFactory.getLogger(MellomlagringTest::class.java)
 
         val redisServer: RedisServer = RedisServer
-            .newRedisServer(6379)
+            .newRedisServer()
             .started()
 
         val redisClient = RedisConfig.redisClient(
-            redisHost = redisServer.host,
+            redisHost = "localhost",
             redisPort = redisServer.bindPort
         )
 

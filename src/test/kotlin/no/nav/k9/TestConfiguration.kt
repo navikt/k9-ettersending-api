@@ -7,8 +7,8 @@ import no.nav.helse.dusseldorf.testsupport.jws.LoginService
 import no.nav.helse.dusseldorf.testsupport.wiremock.getAzureV2WellKnownUrl
 import no.nav.helse.dusseldorf.testsupport.wiremock.getLoginServiceV1WellKnownUrl
 import no.nav.k9.wiremock.getK9DokumentUrl
-import no.nav.k9.wiremock.getK9OppslagUrl
 import no.nav.k9.wiremock.getK9EttersendingMottakUrl
+import no.nav.k9.wiremock.getK9OppslagUrl
 
 object TestConfiguration {
 
@@ -49,7 +49,7 @@ object TestConfiguration {
             map["nav.auth.issuers.1.audience"] = LoginService.V1_0.getAudience()
         }
 
-        map["nav.redis.host"] = redisServer.host
+        map["nav.redis.host"] = "localhost"
         map["nav.redis.port"] = "${redisServer.bindPort}"
         map["nav.storage.passphrase"] = "verySecret"
 
