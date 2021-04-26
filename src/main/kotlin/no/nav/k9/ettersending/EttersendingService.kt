@@ -31,11 +31,11 @@ class EttersendingService(
         logger.info("Registrerer ettersending av typen ${ettersending.søknadstype.name}. Henter søker")
         val søker: Søker = søkerService.getSoker(idToken = idToken, callId = callId)
 
-        logger.info("Søker hentet. Validerer søker.")
+        logger.trace("Søker hentet. Validerer søker.")
         søker.validate()
-        logger.info("Søker Validert.")
+        logger.trace("Søker Validert.")
 
-        logger.trace("Henter ${ettersending.vedlegg.size} vedlegg.")
+        logger.info("Henter ${ettersending.vedlegg.size} vedlegg.")
         val vedlegg = vedleggService.hentVedlegg(
             idToken = idToken,
             vedleggUrls = ettersending.vedlegg,

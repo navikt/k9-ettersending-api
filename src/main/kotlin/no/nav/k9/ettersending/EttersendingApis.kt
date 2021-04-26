@@ -30,7 +30,7 @@ fun Route.ettersendingApis(
     class sendEttersending
 
     post { _ : sendEttersending ->
-        logger.trace("Mottatt ettersending. Mapper...")
+        logger.info("Mottatt ettersending.")
         val ettersending = call.receive<Ettersending>()
         logger.trace("Ettersending mappet.")
 

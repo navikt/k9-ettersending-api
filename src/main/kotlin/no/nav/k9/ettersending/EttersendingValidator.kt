@@ -12,7 +12,7 @@ private val vedleggTooLargeProblemDetails = DefaultProblemDetails(
 )
 
 internal fun Ettersending.valider() {
-    val violations: MutableSet<Violation> = mutableSetOf<Violation>()
+    val violations: MutableSet<Violation> = mutableSetOf()
 
     if(søknadstype == Søknadstype.PLEIEPENGER_SYKT_BARN && beskrivelse.isNullOrBlank()){
         violations.add(

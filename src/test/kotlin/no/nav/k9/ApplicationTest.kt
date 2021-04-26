@@ -384,6 +384,22 @@ class ApplicationTest {
     }
 
     @Test
+    fun `Sende gyldig ettersending som raw json for OMP_DELE_DAGER`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = "/ettersend",
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            expectedResponse = null,
+            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_DELE_DAGER")
+        )
+    }
+
+    @Test
     fun `Sende gyldig ettersending som raw json for deprecated omsorgspenger`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
