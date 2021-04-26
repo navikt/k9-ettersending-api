@@ -23,7 +23,7 @@ fun Ettersending.tilK9Format(mottatt: ZonedDateTime, søker: Søker) : Ettersend
 
 private fun Søknadstype.tilK9Ytelse(): Ytelse {
     return when(this){
-        Søknadstype.OMP_UTV_KS -> Ytelse.OMP_UTV_KS
+        Søknadstype.OMP_UTV_KS, Søknadstype.OMP_DELE_DAGER -> Ytelse.OMP_UTV_KS //TODO 26.04.2021 - Lage egen Ytelse for dele dager i k9
         Søknadstype.OMP_UTV_MA -> Ytelse.OMP_UTV_MA
         Søknadstype.PLEIEPENGER_SYKT_BARN -> Ytelse.PLEIEPENGER_SYKT_BARN
         Søknadstype.OMP_UT_SNF, Søknadstype.OMP_UT_ARBEIDSTAKER -> Ytelse.OMP_UT
