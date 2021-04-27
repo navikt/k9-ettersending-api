@@ -400,38 +400,6 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Sende gyldig ettersending som raw json for deprecated omsorgspenger`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
-
-        requestAndAssert(
-            httpMethod = HttpMethod.Post,
-            path = "/ettersend",
-            expectedCode = HttpStatusCode.Accepted,
-            cookie = cookie,
-            expectedResponse = null,
-            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "omsorgspenger")
-        )
-    }
-
-    @Test
-    fun `Sende gyldig ettersending som raw json for deprecated pleiepenger`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
-
-        requestAndAssert(
-            httpMethod = HttpMethod.Post,
-            path = "/ettersend",
-            expectedCode = HttpStatusCode.Accepted,
-            cookie = cookie,
-            expectedResponse = null,
-            requestEntity = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "pleiepenger")
-        )
-    }
-
-    @Test
     fun `Sende ettersending som mangler påkrevd felt`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
@@ -469,7 +437,7 @@ class ApplicationTest {
                   "harForståttRettigheterOgPlikter": true,
                   "harBekreftetOpplysninger": true,
                   "beskrivelse": "Masse tekst",
-                  "søknadstype": "omsorgspenger"
+                  "søknadstype": "OMP_UTV_KS"
                 }
             """.trimIndent()
         )

@@ -17,7 +17,7 @@
 * [11. Drift og støtte](#11-drift-og-sttte)
 
 # 1. Kontekst
-API for melding om ettersendelse av dokumentasjon for pleiepenger og omsorgspenger.
+API for melding om ettersendelse av dokumentasjon for pleiepenger og ytelser innenfor omsorgspenger.
 
 # 2. Funksjonelle Krav
 Denne tjenesten understøtter søknadsprosessen, samt eksponerer endepunkt for innsending av vedlegg.
