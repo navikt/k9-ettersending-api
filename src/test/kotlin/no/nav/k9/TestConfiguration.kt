@@ -1,6 +1,5 @@
 package no.nav.k9
 
-import com.github.fppt.jedismock.RedisServer
 import com.github.tomakehurst.wiremock.WireMockServer
 import no.nav.helse.dusseldorf.testsupport.jws.ClientCredentials
 import no.nav.helse.dusseldorf.testsupport.jws.LoginService
@@ -18,8 +17,7 @@ object TestConfiguration {
         k9OppslagUrl: String? = wireMockServer?.getK9OppslagUrl(),
         k9EttersendingMottakUrl : String? = wireMockServer?.getK9EttersendingMottakUrl(),
         k9DokumentUrl : String? = wireMockServer?.getK9DokumentUrl(),
-        corsAdresses : String = "http://localhost:8080",
-        redisServer: RedisServer
+        corsAdresses : String = "http://localhost:8080"
     ) : Map<String, String> {
 
         val map = mutableMapOf(
@@ -48,10 +46,6 @@ object TestConfiguration {
             map["nav.auth.issuers.1.discovery_endpoint"] = wireMockServer.getLoginServiceV1WellKnownUrl()
             map["nav.auth.issuers.1.audience"] = LoginService.V1_0.getAudience()
         }
-
-        map["nav.redis.host"] = "localhost"
-        map["nav.redis.port"] = "${redisServer.bindPort}"
-        map["nav.storage.passphrase"] = "verySecret"
 
         return map.toMap()
     }

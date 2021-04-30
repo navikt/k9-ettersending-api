@@ -1,6 +1,5 @@
 package no.nav.k9
 
-import com.github.fppt.jedismock.RedisServer
 import com.github.tomakehurst.wiremock.http.Cookie
 import com.typesafe.config.ConfigFactory
 import io.ktor.config.*
@@ -12,7 +11,6 @@ import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import no.nav.helse.getAuthCookie
 import no.nav.k9.EttersendingUtils.gyldigEttersendingSomJson
 import no.nav.k9.ettersending.Søknadstype
-import no.nav.k9.mellomlagring.started
 import no.nav.k9.wiremock.*
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -52,15 +50,11 @@ class ApplicationTest {
             .stubK9OppslagSoker()
             .stubK9Dokument()
 
-        val redisServer: RedisServer = RedisServer
-            .newRedisServer().started()
-
         fun getConfig(): ApplicationConfig {
 
             val fileConfig = ConfigFactory.load()
             val testConfig = ConfigFactory.parseMap(TestConfiguration.asMap(
-                wireMockServer = wireMockServer,
-                redisServer = redisServer
+                wireMockServer = wireMockServer
             ))
             val mergedConfig = testConfig.withFallback(fileConfig)
 
@@ -84,7 +78,6 @@ class ApplicationTest {
         fun tearDown() {
             logger.info("Tearing down")
             wireMockServer.stop()
-            redisServer.stop()
             logger.info("Tear down complete")
         }
     }

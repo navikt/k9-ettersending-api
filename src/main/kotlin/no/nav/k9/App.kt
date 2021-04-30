@@ -34,10 +34,6 @@ import no.nav.k9.ettersending.ettersendingApis
 import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.auth.IdTokenStatusPages
 import no.nav.k9.general.systemauth.AccessTokenClientResolver
-import no.nav.k9.mellomlagring.MellomlagringService
-import no.nav.k9.mellomlagring.mellomlagringApis
-import no.nav.k9.redis.RedisConfig
-import no.nav.k9.redis.RedisStore
 import no.nav.k9.soker.SøkerGateway
 import no.nav.k9.soker.SøkerService
 import no.nav.k9.soker.søkerApis
@@ -137,19 +133,6 @@ fun Application.k9EttersendingApi() {
 
             søkerApis(
                 søkerService = søkerService,
-                idTokenProvider = idTokenProvider
-            )
-
-            mellomlagringApis(
-                mellomlagringService = MellomlagringService(
-                    RedisStore(
-                        redisClient = RedisConfig.redisClient(
-                            redisHost = configuration.getRedisHost(),
-                            redisPort = configuration.getRedisPort()
-                        )
-                    ),
-                    passphrase = configuration.getStoragePassphrase(),
-                ),
                 idTokenProvider = idTokenProvider
             )
 
