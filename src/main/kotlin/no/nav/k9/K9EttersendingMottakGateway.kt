@@ -26,7 +26,7 @@ import java.net.URI
 class K9EttersendingMottakGateway(
     baseUrl: URI,
     private val accessTokenClient: AccessTokenClient,
-    private val sendeSoknadTilProsesseringScopes: Set<String>,
+    private val k9EttersendingMottakClientId: Set<String>,
     private val apiGatewayApiKey: ApiGatewayApiKey
 ) : HealthCheck {
 
@@ -46,7 +46,7 @@ class K9EttersendingMottakGateway(
 
     override suspend fun check(): Result {
         return try {
-            accessTokenClient.getAccessToken(sendeSoknadTilProsesseringScopes)
+            accessTokenClient.getAccessToken(k9EttersendingMottakClientId)
             Healthy("K9EttersendingMottakGateway", "Henting av access token for å legge søknad til prosessering OK.")
         } catch (cause: Throwable) {
             logger.error("Feil ved henting av access token for å legge søknad til prosessering", cause)
@@ -58,7 +58,7 @@ class K9EttersendingMottakGateway(
         ettersending: KomplettEttersending,
         callId: CallId
     ) {
-        val authorizationHeader = cachedAccessTokenClient.getAccessToken(sendeSoknadTilProsesseringScopes).asAuthoriationHeader()
+        val authorizationHeader = cachedAccessTokenClient.getAccessToken(k9EttersendingMottakClientId).asAuthoriationHeader()
 
         val body = objectMapper.writeValueAsBytes(ettersending)
         val contentStream = { ByteArrayInputStream(body) }

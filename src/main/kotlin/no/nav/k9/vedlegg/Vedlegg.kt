@@ -1,9 +1,12 @@
 package no.nav.k9.vedlegg
 
+import com.fasterxml.jackson.annotation.JsonProperty
+
 data class Vedlegg(
     val content: ByteArray,
     val contentType: String,
-    val title: String
+    val title: String,
+    val eier: DokumentEier
 
 ) {
     override fun equals(other: Any?): Boolean {
@@ -15,6 +18,7 @@ data class Vedlegg(
         if (!content.contentEquals(other.content)) return false
         if (contentType != other.contentType) return false
         if (title != other.title) return false
+        if (eier != other.eier) return false
 
         return true
     }
@@ -25,5 +29,8 @@ data class Vedlegg(
         result = 31 * result + title.hashCode()
         return result
     }
-
 }
+
+data class DokumentEier(
+    @JsonProperty("eiers_fødselsnummer") val eiersFødselsnummer: String
+)

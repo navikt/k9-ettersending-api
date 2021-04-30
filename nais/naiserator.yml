@@ -6,7 +6,7 @@ metadata:
   labels:
     team: {{team}}
 spec:
-  image: {{ image }}
+  image: {{image}}
   port: 8080
   liveness:
     path: isalive
@@ -36,20 +36,23 @@ spec:
   prometheus:
     enabled: true
     path: /metrics
-  vault:
-    enabled: true
-    paths:
-      - mountPath: /var/run/secrets/nais.io/vault
-        kvPath: {{vaultKvPath}}
-      - mountPath: /var/run/secrets/nais.io/azuread
-        kvPath: {{azureadKvPath}}
-      - mountPath: /var/run/secrets/nais.io/apigw
-        kvPath: {{apigwKvPath}}
-  webproxy: true
+  azure:
+    application:
+      enabled: true
+      tenant: {{tenant}}
+  accessPolicy:
+    outbound:
+      rules:
+        - application: k9-mellomlagring
+      external:
+      {{#each externalHosts as |host|}}
+          - host: {{host}}
+      {{/each}}
   env:
   {{#each env}}
     - name: {{@key}}
       value: "{{this}}"
   {{/each}}
   envFrom:
+    - secret: {{app}}
     - configmap: loginservice-idporten

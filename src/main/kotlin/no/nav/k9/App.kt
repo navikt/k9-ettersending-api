@@ -37,7 +37,7 @@ import no.nav.k9.general.systemauth.AccessTokenClientResolver
 import no.nav.k9.soker.SøkerGateway
 import no.nav.k9.soker.SøkerService
 import no.nav.k9.soker.søkerApis
-import no.nav.k9.vedlegg.K9DokumentGateway
+import no.nav.k9.vedlegg.K9MellomlagringGateway
 import no.nav.k9.vedlegg.VedleggService
 import no.nav.k9.vedlegg.vedleggApis
 import org.slf4j.Logger
@@ -107,16 +107,18 @@ fun Application.k9EttersendingApi() {
 
     install(Routing) {
 
-        val vedleggService = VedleggService(
-            k9DokumentGateway = K9DokumentGateway(
-                baseUrl = configuration.getK9DokumentUrl()
-            )
+        val k9MellomlagringGateway = K9MellomlagringGateway(
+            baseUrl = configuration.getK9MellomlagringUrl(),
+            accessTokenClient = accessTokenClientResolver.accessTokenClient(),
+            k9MellomlagringScope = configuration.getK9MellomlagringScopes()
         )
+
+        val vedleggService = VedleggService(k9MellomlagringGateway = k9MellomlagringGateway)
 
         val k9EttersendingMottakGateway = K9EttersendingMottakGateway(
             baseUrl = configuration.getK9EttersendingMottakBaseUrl(),
             accessTokenClient = accessTokenClientResolver.accessTokenClient(),
-            sendeSoknadTilProsesseringScopes = configuration.getSendSoknadTilProsesseringScopes(),
+            k9EttersendingMottakClientId = configuration.k9EttersendingMottakClientId(),
             apiGatewayApiKey = apiGatewayApiKey
         )
 
@@ -158,7 +160,7 @@ fun Application.k9EttersendingApi() {
                 HttpRequestHealthCheck(
                     mapOf(
                         Url.buildURL(
-                            baseUrl = configuration.getK9DokumentUrl(),
+                            baseUrl = configuration.getK9MellomlagringUrl(),
                             pathParts = listOf("health")
                         ) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK),
                         Url.buildURL(
@@ -213,11 +215,6 @@ fun Application.k9EttersendingApi() {
 
 internal fun ObjectMapper.k9EttersendingKonfiguert() = dusseldorfConfigured().apply {
     configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
-}
-
-internal fun ObjectMapper.k9DokumentKonfigurert() = dusseldorfConfigured().apply {
-    configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false)
-    propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
 }
 
 internal fun ObjectMapper.k9SelvbetjeningOppslagKonfigurert(): ObjectMapper {

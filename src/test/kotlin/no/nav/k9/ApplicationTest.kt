@@ -43,12 +43,11 @@ class ApplicationTest {
             .withLoginServiceSupport()
             .k9EttersendingApiConfig()
             .build()
-            .stubK9DokumentHealth()
             .stubK9EttersendingMottakHealth()
             .stubOppslagHealth()
             .stubLeggSoknadTilProsessering("v1/ettersend")
             .stubK9OppslagSoker()
-            .stubK9Dokument()
+            .stubK9Mellomlagring()
 
         fun getConfig(): ApplicationConfig {
 
