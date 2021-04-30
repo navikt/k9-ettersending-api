@@ -29,8 +29,6 @@ dependencies {
     // Client
     implementation ( "no.nav.helse:dusseldorf-ktor-client:$dusseldorfKtorVersion")
     implementation ( "no.nav.helse:dusseldorf-oauth2-client:$dusseldorfKtorVersion")
-    implementation ("io.lettuce:lettuce-core:5.2.1.RELEASE")
-    implementation("com.github.fppt:jedis-mock:0.1.16")
 
     // K9-format
     implementation ( "no.nav.k9:ettersendelse:$k9FormatVersion")

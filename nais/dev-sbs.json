@@ -14,7 +14,6 @@
   "azureadKvPath": "/azuread/data/dev/creds/k9-ettersending-api",
   "apigwKvPath": "/apikey/apigw/dev/helse-reverse-proxy/k9-ettersending-api_q1",
   "env": {
-    "REDIS_HOST": "k9-ettersending-api-redis.default.svc.nais.local",
     "CORS_ADDRESSES": "https://www-q0.nav.no, https://k9-ettersending-soknad.dev.nav.no",
     "LOGIN_SERVICE_V1_DISCOVERY_ENDPOINT": "https://login.microsoftonline.com/navtestb2c.onmicrosoft.com/discovery/v2.0/.well-known/openid-configuration?p=b2c_1a_idporten_ver1",
     "COOKIE_NAME": "selvbetjening-idtoken",
