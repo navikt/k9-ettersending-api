@@ -5,7 +5,7 @@ import no.nav.helse.dusseldorf.testsupport.jws.ClientCredentials
 import no.nav.helse.dusseldorf.testsupport.jws.LoginService
 import no.nav.helse.dusseldorf.testsupport.wiremock.getAzureV2WellKnownUrl
 import no.nav.helse.dusseldorf.testsupport.wiremock.getLoginServiceV1WellKnownUrl
-import no.nav.k9.wiremock.getK9DokumentUrl
+import no.nav.k9.wiremock.getK9MellomlagringUrl
 import no.nav.k9.wiremock.getK9EttersendingMottakUrl
 import no.nav.k9.wiremock.getK9OppslagUrl
 
@@ -16,7 +16,7 @@ object TestConfiguration {
         port : Int = 8080,
         k9OppslagUrl: String? = wireMockServer?.getK9OppslagUrl(),
         k9EttersendingMottakUrl : String? = wireMockServer?.getK9EttersendingMottakUrl(),
-        k9DokumentUrl : String? = wireMockServer?.getK9DokumentUrl(),
+        k9MellomlagringUrl : String? = wireMockServer?.getK9MellomlagringUrl(),
         corsAdresses : String = "http://localhost:8080"
     ) : Map<String, String> {
 
@@ -25,7 +25,7 @@ object TestConfiguration {
             Pair("nav.authorization.cookie_name", "localhost-idtoken"),
             Pair("nav.gateways.k9_oppslag_url","$k9OppslagUrl"),
             Pair("nav.gateways.k9_ettersending_mottak_base_url", "$k9EttersendingMottakUrl"),
-            Pair("nav.gateways.k9_dokument_url", "$k9DokumentUrl"),
+            Pair("nav.gateways.k9_mellomlagring_url", "$k9MellomlagringUrl"),
             Pair("nav.cors.addresses", corsAdresses),
             Pair("nav.authorization.api_gateway.api_key", "verysecret")
         )
@@ -37,7 +37,7 @@ object TestConfiguration {
             map["nav.auth.clients.0.private_key_jwk"] = ClientCredentials.ClientC.privateKeyJwk
             map["nav.auth.clients.0.certificate_hex_thumbprint"] = "The keyId of Azure JWK"
             map["nav.auth.clients.0.discovery_endpoint"] = wireMockServer.getAzureV2WellKnownUrl()
-            map["nav.auth.scopes.sende-soknad-til-prosessering"] = "k9-ettersending-mottak/.default"
+            map["nav.auth.scopes.k9-ettersending-mottak-client-id"] = "k9-ettersending-mottak/.default"
 
             // Issuers
             map["nav.auth.issuers.0.alias"] = "login-service-v1"
@@ -45,6 +45,10 @@ object TestConfiguration {
             map["nav.auth.issuers.1.alias"] = "login-service-v2"
             map["nav.auth.issuers.1.discovery_endpoint"] = wireMockServer.getLoginServiceV1WellKnownUrl()
             map["nav.auth.issuers.1.audience"] = LoginService.V1_0.getAudience()
+
+            // scopes
+            map["nav.auth.scopes.k9-ettersending-mottak-client-id"] = "k9-ettersending-mottak-client-id/.default"
+            map["nav.auth.scopes.k9-mellomlagring-client-id"] = "k9-mellomlagring-client-id/.default"
         }
 
         return map.toMap()

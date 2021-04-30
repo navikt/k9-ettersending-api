@@ -7,6 +7,7 @@ import no.nav.k9.general.auth.IdToken
 import no.nav.k9.soker.Søker
 import no.nav.k9.soker.SøkerService
 import no.nav.k9.soker.validate
+import no.nav.k9.vedlegg.DokumentEier
 import no.nav.k9.vedlegg.VedleggService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -39,7 +40,8 @@ class EttersendingService(
         val vedlegg = vedleggService.hentVedlegg(
             idToken = idToken,
             vedleggUrls = ettersending.vedlegg,
-            callId = callId
+            callId = callId,
+            eier = DokumentEier(søker.fødselsnummer)
         )
 
         logger.trace("Vedlegg hentet. Validerer vedlegg.")
@@ -66,14 +68,6 @@ class EttersendingService(
             callId = callId
         )
 
-        logger.trace("Ettersending lagt til prosessering. Sletter vedlegg.")
-
-        vedleggService.slettVedlegg(
-            vedleggUrls = ettersending.vedlegg,
-            callId = callId,
-            idToken = idToken
-        )
-
-        logger.trace("Vedlegg slettet.")
+        logger.trace("Ettersending lagt til mottak.")
     }
 }

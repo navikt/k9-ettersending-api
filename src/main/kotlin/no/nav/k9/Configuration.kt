@@ -40,7 +40,10 @@ data class Configuration(val config : ApplicationConfig) {
 
     internal fun getK9OppslagUrl() = URI(config.getRequiredString("nav.gateways.k9_oppslag_url", secret = false))
 
-    internal fun getK9DokumentUrl() = URI(config.getRequiredString("nav.gateways.k9_dokument_url", secret = false))
+    internal fun getK9MellomlagringUrl() =
+        URI(config.getRequiredString("nav.gateways.k9_mellomlagring_url", secret = false))
+
+    internal fun getK9MellomlagringScopes() = getScopesFor("k9-mellomlagring-client-id")
 
     internal fun getK9EttersendingMottakBaseUrl() = URI(config.getRequiredString("nav.gateways.k9_ettersending_mottak_base_url", secret = false))
 
@@ -50,5 +53,5 @@ data class Configuration(val config : ApplicationConfig) {
     }
 
     private fun getScopesFor(operation: String) = config.getRequiredList("nav.auth.scopes.$operation", secret = false, builder = { it }).toSet()
-    internal fun getSendSoknadTilProsesseringScopes() = getScopesFor("sende-soknad-til-prosessering")
+    internal fun k9EttersendingMottakClientId() = getScopesFor("k9-ettersending-mottak-client-id")
 }

@@ -22,11 +22,10 @@ class ApplicationWithMocks {
                 .withLoginServiceSupport()
                 .k9EttersendingApiConfig()
                 .build()
-                .stubK9DokumentHealth()
                 .stubK9EttersendingMottakHealth()
                 .stubOppslagHealth()
                 .stubLeggSoknadTilProsessering("v1/ettersend")
-                .stubK9Dokument()
+                .stubK9Mellomlagring()
                 .stubK9OppslagSoker()
 
             val testArgs = TestConfiguration.asMap(
