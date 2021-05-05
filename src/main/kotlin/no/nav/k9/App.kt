@@ -123,8 +123,7 @@ fun Application.k9EttersendingApi() {
         )
 
         val sokerGateway = SøkerGateway(
-            baseUrl = configuration.getK9OppslagUrl(),
-            apiGatewayApiKey = apiGatewayApiKey
+            baseUrl = configuration.getK9OppslagUrl()
         )
 
         val søkerService = SøkerService(
