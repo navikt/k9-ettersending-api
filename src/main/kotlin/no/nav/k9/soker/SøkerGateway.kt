@@ -24,8 +24,7 @@ import java.time.LocalDate
 
 class SøkerGateway (
     baseUrl: URI,
-    apiGatewayApiKey: ApiGatewayApiKey
-) : K9OppslagGateway(baseUrl, apiGatewayApiKey) {
+) : K9OppslagGateway(baseUrl) {
 
     private companion object {
         private val logger: Logger = LoggerFactory.getLogger("nav.SokerGateway")
