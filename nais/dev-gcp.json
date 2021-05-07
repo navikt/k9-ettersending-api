@@ -12,7 +12,8 @@
   "externalHosts": [
     "api-gw-q1.oera.no",
     "oauth2.googleapis.com",
-    "login.microsoftonline.com"
+    "login.microsoftonline.com",
+    "k9-selvbetjening-oppslag.dev-fss-pub.nais.io"
   ],
   "env": {
     "CORS_ADDRESSES": "https://k9-ettersending-soknad.dev.nav.no",
