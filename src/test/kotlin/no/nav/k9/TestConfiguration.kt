@@ -5,8 +5,8 @@ import no.nav.helse.dusseldorf.testsupport.jws.ClientCredentials
 import no.nav.helse.dusseldorf.testsupport.jws.LoginService
 import no.nav.helse.dusseldorf.testsupport.wiremock.getAzureV2WellKnownUrl
 import no.nav.helse.dusseldorf.testsupport.wiremock.getLoginServiceV1WellKnownUrl
-import no.nav.k9.wiremock.getK9MellomlagringUrl
 import no.nav.k9.wiremock.getK9EttersendingMottakUrl
+import no.nav.k9.wiremock.getK9MellomlagringUrl
 import no.nav.k9.wiremock.getK9OppslagUrl
 
 object TestConfiguration {
@@ -27,7 +27,6 @@ object TestConfiguration {
             Pair("nav.gateways.k9_ettersending_mottak_base_url", "$k9EttersendingMottakUrl"),
             Pair("nav.gateways.k9_mellomlagring_url", "$k9MellomlagringUrl"),
             Pair("nav.cors.addresses", corsAdresses),
-            Pair("nav.authorization.api_gateway.api_key", "verysecret")
         )
 
         if (wireMockServer != null) {

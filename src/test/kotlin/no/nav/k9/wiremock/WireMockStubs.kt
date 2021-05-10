@@ -4,11 +4,11 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
-import io.ktor.http.HttpHeaders
+import io.ktor.http.*
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 
 internal const val k9OppslagPath = "/k9-selvbetjening-oppslag-mock"
-private const val k9EttersendingMottakPath = "/helse-reverse-proxy/k9-ettersending-mottak-mock"
+private const val k9EttersendingMottakPath = "/k9-ettersending-mottak-mock"
 private const val k9MellomlagringPath = "/k9-mellomlagring-mock"
 
 internal fun WireMockBuilder.k9EttersendingApiConfig() = wireMockConfiguration {
@@ -49,27 +49,12 @@ private fun WireMockServer.stubHealthEndpoint(
     return this
 }
 
-private fun WireMockServer.stubHealthEndpointThroughZones(
-    path : String
-) : WireMockServer{
-    WireMock.stubFor(
-        WireMock.get(WireMock.urlPathMatching(".*$path"))
-            .withHeader("x-nav-apiKey", AnythingPattern())
-            .willReturn(
-            WireMock.aResponse()
-                .withStatus(200)
-        )
-    )
-    return this
-}
-
-internal fun WireMockServer.stubK9EttersendingMottakHealth() = stubHealthEndpointThroughZones("$k9EttersendingMottakPath/health")
-internal fun WireMockServer.stubOppslagHealth() = stubHealthEndpointThroughZones("$k9OppslagPath/health")
+internal fun WireMockServer.stubK9EttersendingMottakHealth() = stubHealthEndpoint("$k9EttersendingMottakPath/health")
+internal fun WireMockServer.stubOppslagHealth() = stubHealthEndpoint("$k9OppslagPath/health")
 
 internal fun WireMockServer.stubLeggSoknadTilProsessering(path: String) : WireMockServer{
     WireMock.stubFor(
         WireMock.post(WireMock.urlMatching(".*$k9EttersendingMottakPath/$path"))
-            .withHeader("x-nav-apiKey", AnythingPattern())
             .willReturn(
                 WireMock.aResponse()
                     .withStatus(202)

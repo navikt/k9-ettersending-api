@@ -1,18 +1,13 @@
 package no.nav.k9.soker
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
-import io.ktor.http.Url
+import io.ktor.http.*
 import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.Retry
-import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.general.CallId
-import no.nav.k9.general.auth.ApiGatewayApiKey
 import no.nav.k9.general.auth.IdToken
 import no.nav.k9.general.oppslag.K9OppslagGateway
 import no.nav.k9.k9SelvbetjeningOppslagKonfigurert
