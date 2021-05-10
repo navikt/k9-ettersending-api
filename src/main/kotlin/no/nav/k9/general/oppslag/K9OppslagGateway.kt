@@ -2,9 +2,8 @@ package no.nav.k9.general.oppslag
 
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.httpGet
-import io.ktor.http.HttpHeaders
+import io.ktor.http.*
 import no.nav.k9.general.CallId
-import no.nav.k9.general.auth.ApiGatewayApiKey
 import no.nav.k9.general.auth.IdToken
 import java.net.URI
 
