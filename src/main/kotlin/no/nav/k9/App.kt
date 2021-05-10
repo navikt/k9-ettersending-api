@@ -58,7 +58,6 @@ fun Application.k9EttersendingApi() {
     System.setProperty("dusseldorf.ktor.serializeProblemDetailsWithContentNegotiation", "true")
 
     val configuration = Configuration(environment.config)
-    val apiGatewayApiKey = configuration.getApiGatewayApiKey()
     val accessTokenClientResolver = AccessTokenClientResolver(environment.config.clients())
 
     install(ContentNegotiation) {
@@ -118,8 +117,7 @@ fun Application.k9EttersendingApi() {
         val k9EttersendingMottakGateway = K9EttersendingMottakGateway(
             baseUrl = configuration.getK9EttersendingMottakBaseUrl(),
             accessTokenClient = accessTokenClientResolver.accessTokenClient(),
-            k9EttersendingMottakClientId = configuration.k9EttersendingMottakClientId(),
-            apiGatewayApiKey = apiGatewayApiKey
+            k9EttersendingMottakClientId = configuration.k9EttersendingMottakClientId()
         )
 
         val sokerGateway = SøkerGateway(
@@ -165,10 +163,7 @@ fun Application.k9EttersendingApi() {
                         Url.buildURL(
                             baseUrl = configuration.getK9EttersendingMottakBaseUrl(),
                             pathParts = listOf("health")
-                        ) to HttpRequestHealthConfig(
-                            expectedStatus = HttpStatusCode.OK,
-                            httpHeaders = mapOf(apiGatewayApiKey.headerKey to apiGatewayApiKey.value)
-                        )
+                        ) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK)
                     )
                 )
             )

@@ -17,7 +17,6 @@ import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.ettersending.KomplettEttersending
 import no.nav.k9.general.CallId
-import no.nav.k9.general.auth.ApiGatewayApiKey
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
@@ -26,8 +25,7 @@ import java.net.URI
 class K9EttersendingMottakGateway(
     baseUrl: URI,
     private val accessTokenClient: AccessTokenClient,
-    private val k9EttersendingMottakClientId: Set<String>,
-    private val apiGatewayApiKey: ApiGatewayApiKey
+    private val k9EttersendingMottakClientId: Set<String>
 ) : HealthCheck {
 
     private companion object {
@@ -71,8 +69,7 @@ class K9EttersendingMottakGateway(
             .header(
                 HttpHeaders.ContentType to "application/json",
                 HttpHeaders.XCorrelationId to callId.value,
-                HttpHeaders.Authorization to authorizationHeader,
-                apiGatewayApiKey.headerKey to apiGatewayApiKey.value
+                HttpHeaders.Authorization to authorizationHeader
             )
 
         val (request, _, result) = Operation.monitored(
@@ -90,5 +87,4 @@ class K9EttersendingMottakGateway(
             }
         )
     }
-
 }
