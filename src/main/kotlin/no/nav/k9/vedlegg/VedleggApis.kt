@@ -1,23 +1,12 @@
 package no.nav.k9.vedlegg
 
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
-import io.ktor.features.origin
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.URLBuilder
-import io.ktor.http.content.MultiPartData
-import io.ktor.http.content.PartData
-import io.ktor.http.content.readAllParts
-import io.ktor.http.content.streamProvider
+import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.locations.*
-import io.ktor.request.ApplicationRequest
-import io.ktor.request.contentType
-import io.ktor.request.receiveMultipart
-import io.ktor.response.header
-import io.ktor.response.respond
-import io.ktor.response.respondBytes
+import io.ktor.request.*
+import io.ktor.response.*
 import io.ktor.routing.Route
 import no.nav.helse.dusseldorf.ktor.core.DefaultProblemDetails
 import no.nav.helse.dusseldorf.ktor.core.respondProblemDetails
@@ -25,6 +14,7 @@ import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.getCallId
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.*
 
 private val logger: Logger = LoggerFactory.getLogger("nav.vedleggApis")
 private const val MAX_VEDLEGG_SIZE = 8 * 1024 * 1024
@@ -150,7 +140,7 @@ private suspend fun MultiPartData.getVedlegg(eier: DokumentEier) : Vedlegg? {
 }
 
 
-private fun Vedlegg.isSupportedContentType(): Boolean = supportedContentTypes.contains(contentType.toLowerCase())
+private fun Vedlegg.isSupportedContentType(): Boolean = supportedContentTypes.contains(contentType.lowercase(Locale.getDefault()))
 
 private fun ApplicationRequest.isFormMultipart(): Boolean {
     return contentType().withoutParameters().match(ContentType.MultiPart.FormData)
