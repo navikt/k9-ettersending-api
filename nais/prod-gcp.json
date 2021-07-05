@@ -22,7 +22,7 @@
     "COOKIE_NAME": "selvbetjening-idtoken",
     "K9_OPPSLAG_REGISTER_URL": "https://k9-selvbetjening-oppslag.prod-fss-pub.nais.io",
     "K9_ETTERSENDING_MOTTAK_BASE_URL": "https://k9-ettersending-mottak.prod-fss-pub.nais.io",
-    "K9_ETTERSENDING_MOTTAK_CLIENT_ID": "ea43448c-d3b4-4fce-8295-02378ab71c75/.default",
+    "K9_ETTERSENDING_MOTTAK_CLIENT_ID": "b5018e50-4f5e-4b4d-8e6a-8c9983fefcd2/.default",
     "K9_MELLOMLAGRING_SERVICE_DISCOVERY": "http://k9-mellomlagring",
     "K9_MELLOMLAGRING_CLIENT_ID": "19aaf0b2-f40a-4a64-bf7f-fd2dd62f0552/.default"
   },
