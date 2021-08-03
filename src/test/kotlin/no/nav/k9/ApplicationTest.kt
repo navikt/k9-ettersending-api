@@ -90,7 +90,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedResponse = """
             {
               "type": "/problem-details/invalid-request-parameters",
@@ -165,7 +165,7 @@ class ApplicationTest {
     fun `Hente søker`() {
         requestAndAssert(
             httpMethod = HttpMethod.Get,
-            path = "/soker",
+            path = SØKER_URL,
             expectedCode = HttpStatusCode.OK,
             expectedResponse = expectedGetSokerJson(fnr)
         )
@@ -175,7 +175,7 @@ class ApplicationTest {
     fun `Hente søker med tilgangsnivå 3`() {
         requestAndAssert(
             httpMethod = HttpMethod.Get,
-            path = "/soker",
+            path = SØKER_URL,
             cookie = getAuthCookie(fnr = fnr, level = 3),
             expectedCode = HttpStatusCode.Forbidden,
             expectedResponse = null
@@ -186,7 +186,7 @@ class ApplicationTest {
     fun `Hente søker som ikke er myndig`() {
         requestAndAssert(
             httpMethod = HttpMethod.Get,
-            path = "/soker",
+            path = SØKER_URL,
             expectedCode = HttpStatusCode.OK,
             expectedResponse = expectedGetSokerJson(
                 fodselsnummer = ikkeMyndigFnr,
@@ -261,7 +261,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedResponse = null,
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
@@ -281,7 +281,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedResponse = null,
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
@@ -303,7 +303,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
             expectedResponse = null,
@@ -319,7 +319,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
             expectedResponse = null,
@@ -335,7 +335,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
             expectedResponse = null,
@@ -351,7 +351,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
             expectedResponse = null,
@@ -367,7 +367,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
             expectedResponse = null,
@@ -383,7 +383,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
             expectedResponse = null,
@@ -399,7 +399,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedResponse = """
                 {
                   "type": "/problem-details/invalid-request-parameters",
@@ -443,7 +443,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedResponse = """
             {
               "type": "/problem-details/invalid-request-parameters",
@@ -481,7 +481,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedResponse = """
                 {
                   "type": "/problem-details/invalid-request-parameters",
@@ -519,7 +519,7 @@ class ApplicationTest {
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
-            path = "/ettersend",
+            path = ETTERSEND_URL,
             expectedResponse = """
                 {
                   "type": "/problem-details/invalid-request-parameters",

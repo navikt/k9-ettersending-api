@@ -2,10 +2,11 @@ package no.nav.k9.ettersending
 
 import io.ktor.application.*
 import io.ktor.http.*
-import io.ktor.locations.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import no.nav.k9.ETTERSEND_URL
+import no.nav.k9.VALIDERING_URL
 import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.getCallId
 import no.nav.k9.k9format.tilK9Format
@@ -19,17 +20,13 @@ import java.time.ZonedDateTime
 
 private val logger: Logger = LoggerFactory.getLogger("nav.ettersendingApis")
 
-@KtorExperimentalLocationsAPI
 fun Route.ettersendingApis(
     ettersendingService: EttersendingService,
     søkerService: SøkerService,
     idTokenProvider: IdTokenProvider
 ) {
 
-    @Location("/ettersend")
-    class sendEttersending
-
-    post { _ : sendEttersending ->
+    post(ETTERSEND_URL){
         logger.info("Mottatt ettersending.")
         val ettersending = call.receive<Ettersending>()
         logger.trace("Ettersending mappet.")
@@ -58,10 +55,7 @@ fun Route.ettersendingApis(
         call.respond(HttpStatusCode.Accepted)
     }
 
-    @Location("/ettersending/valider")
-    class validerEttersending
-
-    post { _: validerEttersending ->
+    post(VALIDERING_URL) {
         val ettersending = call.receive<Ettersending>()
         logger.trace("Validerer ettersending...")
         ettersending.valider()

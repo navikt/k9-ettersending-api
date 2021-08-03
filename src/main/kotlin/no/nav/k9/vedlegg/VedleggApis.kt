@@ -4,12 +4,13 @@ import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.locations.*
 import io.ktor.request.*
 import io.ktor.response.*
-import io.ktor.routing.Route
+import io.ktor.routing.*
 import no.nav.helse.dusseldorf.ktor.core.DefaultProblemDetails
 import no.nav.helse.dusseldorf.ktor.core.respondProblemDetails
+import no.nav.k9.VEDLEGGID_URL
+import no.nav.k9.VEDLEGG_URL
 import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.getCallId
 import org.slf4j.Logger
@@ -28,97 +29,92 @@ private val vedleggContentTypeNotSupportedProblemDetails = DefaultProblemDetails
 private val feilVedSlettingAvVedlegg = DefaultProblemDetails(title = "feil-ved-sletting", status = 500, detail = "Feil ved sletting av vedlegg")
 private val fantIkkeSubjectPaaToken = DefaultProblemDetails(title = "fant-ikke-subject", status = 413, detail = "Fant ikke subject på idToken")
 
-@KtorExperimentalLocationsAPI
 fun Route.vedleggApis(
     vedleggService: VedleggService,
     idTokenProvider: IdTokenProvider
 ) {
-
-    @Location("/vedlegg")
-    class NyttVedleg
-
-    @Location("/vedlegg/{vedleggId}")
-    data class EksisterendeVedlegg(val vedleggId: String)
-
-    get<EksisterendeVedlegg> { eksisterendeVedlegg ->
-        val vedleggId = VedleggId(eksisterendeVedlegg.vedleggId)
-        logger.info("Henter vedlegg")
-        logger.info("$vedleggId")
-        var eier = idTokenProvider.getIdToken(call).getSubject()
-        if (eier == null) call.respond(HttpStatusCode.Forbidden) else {
-            val vedlegg = vedleggService.hentVedlegg(
-                vedleggId = vedleggId,
-                idToken = idTokenProvider.getIdToken(call),
-                callId = call.getCallId(),
-                eier = DokumentEier(eier)
-            )
-
-            if (vedlegg == null) {
-                call.respondProblemDetails(vedleggNotFoundProblemDetails)
+    route(VEDLEGG_URL) {
+        post{
+            logger.info("Lagrer vedlegg")
+            if (!call.request.isFormMultipart()) {
+                call.respondProblemDetails(hasToBeMultupartTypeProblemDetails)
             } else {
-                call.respondBytes(
-                    bytes = vedlegg.content,
-                    contentType = ContentType.parse(vedlegg.contentType),
-                    status = HttpStatusCode.OK
-                )
-            }
-        }
-    }
+                val multipart = call.receiveMultipart()
+                var vedlegg: Vedlegg? = null
 
-    delete<EksisterendeVedlegg> { eksisterendeVedlegg ->
-        val vedleggId = VedleggId(eksisterendeVedlegg.vedleggId)
-        logger.info("Sletter vedlegg")
-        logger.info("$vedleggId")
-        var eier = idTokenProvider.getIdToken(call).getSubject()
-        if (eier == null) call.respond(HttpStatusCode.Forbidden) else {
-            val resultat = vedleggService.slettVedlegg(
-                vedleggId = vedleggId,
-                idToken = idTokenProvider.getIdToken(call),
-                callId = call.getCallId(),
-                eier = DokumentEier(eier)
-            )
-
-            when (resultat) {
-                true -> call.respond(HttpStatusCode.NoContent)
-                false -> call.respondProblemDetails(feilVedSlettingAvVedlegg)
-            }
-        }
-    }
-
-    post<NyttVedleg> { _ ->
-        logger.info("Lagrer vedlegg")
-        if (!call.request.isFormMultipart()) {
-            call.respondProblemDetails(hasToBeMultupartTypeProblemDetails)
-        } else {
-            val multipart = call.receiveMultipart()
-            var vedlegg: Vedlegg? = null
-
-            var eier = idTokenProvider.getIdToken(call).getSubject()
-            if (eier == null) {
-                call.respondProblemDetails(fantIkkeSubjectPaaToken)
-            } else {
-                vedlegg = multipart.getVedlegg(DokumentEier(eier))
-            }
-
-            if (vedlegg == null) {
-                call.respondProblemDetails(vedleggNotAttachedProblemDetails)
-            } else if(!vedlegg.isSupportedContentType()) {
-                call.respondProblemDetails(vedleggContentTypeNotSupportedProblemDetails)
-            } else {
-                if (vedlegg.content.size > MAX_VEDLEGG_SIZE) {
-                    call.respondProblemDetails(vedleggTooLargeProblemDetails)
+                var eier = idTokenProvider.getIdToken(call).getSubject()
+                if (eier == null) {
+                    call.respondProblemDetails(fantIkkeSubjectPaaToken)
                 } else {
-                    val vedleggId = vedleggService.lagreVedlegg(
-                        vedlegg = vedlegg,
-                        idToken = idTokenProvider.getIdToken(call),
-                        callId = call.getCallId()
+                    vedlegg = multipart.getVedlegg(DokumentEier(eier))
+                }
+
+                if (vedlegg == null) {
+                    call.respondProblemDetails(vedleggNotAttachedProblemDetails)
+                } else if(!vedlegg.isSupportedContentType()) {
+                    call.respondProblemDetails(vedleggContentTypeNotSupportedProblemDetails)
+                } else {
+                    if (vedlegg.content.size > MAX_VEDLEGG_SIZE) {
+                        call.respondProblemDetails(vedleggTooLargeProblemDetails)
+                    } else {
+                        val vedleggId = vedleggService.lagreVedlegg(
+                            vedlegg = vedlegg,
+                            idToken = idTokenProvider.getIdToken(call),
+                            callId = call.getCallId()
+                        )
+                        logger.info("$vedleggId")
+                        call.respondVedlegg(vedleggId)
+                    }
+                }
+            }
+        }
+
+        get(VEDLEGGID_URL){
+            val vedleggId = VedleggId(call.parameters["vedleggId"]!!)
+            logger.info("Henter vedlegg")
+            logger.info("$vedleggId")
+            var eier = idTokenProvider.getIdToken(call).getSubject()
+            if (eier == null) call.respond(HttpStatusCode.Forbidden) else {
+                val vedlegg = vedleggService.hentVedlegg(
+                    vedleggId = vedleggId,
+                    idToken = idTokenProvider.getIdToken(call),
+                    callId = call.getCallId(),
+                    eier = DokumentEier(eier)
+                )
+
+                if (vedlegg == null) {
+                    call.respondProblemDetails(vedleggNotFoundProblemDetails)
+                } else {
+                    call.respondBytes(
+                        bytes = vedlegg.content,
+                        contentType = ContentType.parse(vedlegg.contentType),
+                        status = HttpStatusCode.OK
                     )
-                    logger.info("$vedleggId")
-                    call.respondVedlegg(vedleggId)
+                }
+            }
+        }
+
+        delete(VEDLEGGID_URL){
+            val vedleggId = VedleggId(call.parameters["vedleggId"]!!)
+            logger.info("Sletter vedlegg")
+            logger.info("$vedleggId")
+            var eier = idTokenProvider.getIdToken(call).getSubject()
+            if (eier == null) call.respond(HttpStatusCode.Forbidden) else {
+                val resultat = vedleggService.slettVedlegg(
+                    vedleggId = vedleggId,
+                    idToken = idTokenProvider.getIdToken(call),
+                    callId = call.getCallId(),
+                    eier = DokumentEier(eier)
+                )
+
+                when (resultat) {
+                    true -> call.respond(HttpStatusCode.NoContent)
+                    false -> call.respondProblemDetails(feilVedSlettingAvVedlegg)
                 }
             }
         }
     }
+
 }
 
 
@@ -138,7 +134,6 @@ private suspend fun MultiPartData.getVedlegg(eier: DokumentEier) : Vedlegg? {
     }
     return null
 }
-
 
 private fun Vedlegg.isSupportedContentType(): Boolean = supportedContentTypes.contains(contentType.lowercase(Locale.getDefault()))
 
