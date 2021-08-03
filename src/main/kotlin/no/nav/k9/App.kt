@@ -10,10 +10,8 @@ import io.ktor.auth.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.jackson.*
-import io.ktor.locations.*
 import io.ktor.metrics.micrometer.*
 import io.ktor.routing.*
-import io.ktor.util.*
 import io.prometheus.client.hotspot.DefaultExports
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.clients
@@ -48,8 +46,6 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 private val logger: Logger = LoggerFactory.getLogger("nav.k9EttersendingApi")
 
-@KtorExperimentalAPI
-@KtorExperimentalLocationsAPI
 fun Application.k9EttersendingApi() {
     val appId = environment.config.id()
     logProxyProperties()
@@ -101,8 +97,6 @@ fun Application.k9EttersendingApi() {
         JacksonStatusPages()
         IdTokenStatusPages()
     }
-
-    install(Locations)
 
     install(Routing) {
 

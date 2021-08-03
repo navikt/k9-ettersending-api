@@ -2,11 +2,9 @@ package no.nav.k9
 
 import com.github.tomakehurst.wiremock.http.Cookie
 import io.ktor.http.*
-import io.ktor.http.content.PartData
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
-import io.ktor.utils.io.streams.asInput
+import io.ktor.http.content.*
+import io.ktor.server.testing.*
+import io.ktor.utils.io.streams.*
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -20,7 +18,7 @@ fun TestApplicationEngine.handleRequestUploadImage(
 ): String {
     val boundary = "***vedlegg***"
 
-    handleRequest(HttpMethod.Post, "/vedlegg") {
+    handleRequest(HttpMethod.Post, VEDLEGG_URL) {
         addHeader("Cookie", cookie.toString())
         addHeader(
             HttpHeaders.ContentType,
