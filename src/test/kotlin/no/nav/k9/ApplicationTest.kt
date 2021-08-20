@@ -257,6 +257,7 @@ class ApplicationTest {
         )
     }
 
+    // TODO: 20/08/2021 Legge til test som sjekker at try/catch fungerer ved kafka-feil
     @Test
     fun `Sende full gyldig ettersending`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)

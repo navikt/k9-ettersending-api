@@ -50,6 +50,7 @@ class EttersendingService(
         } catch (exception: Exception) {
             logger.info("Feilet ved å legge melding på Kafka. Sletter persisterte vedlegg")
             vedleggService.slettPersistertVedlegg(ettersending.vedlegg, callId, dokumentEier)
+            throw MeldingRegistreringFeiletException("Feilet ved å legge melding på Kafka")
         }
     }
 
@@ -67,3 +68,5 @@ class EttersendingService(
         vedleggService.persisterVedlegg(vedlegg, callId, dokumentEier)
     }
 }
+
+class MeldingRegistreringFeiletException(s: String) : Throwable(s)
