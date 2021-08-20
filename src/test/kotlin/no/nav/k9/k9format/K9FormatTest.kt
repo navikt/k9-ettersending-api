@@ -16,7 +16,7 @@ class K9FormatTest {
         val mottatt = ZonedDateTime.of(2020, 1, 2, 3, 4, 5, 6, ZoneId.of("UTC"))
         val søknadId = UUID.randomUUID().toString()
 
-        val ettersending = EttersendingUtils.gyldigEttersending.copy(
+        val ettersending = EttersendingUtils.hentGyldigEttersending().copy(
             søknadId = søknadId,
             søknadstype = Søknadstype.OMP_UTV_KS
         )

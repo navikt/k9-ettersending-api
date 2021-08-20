@@ -6,6 +6,8 @@ val dusseldorfKtorVersion = "2.1.6.0-1516d10"
 val ktorVersion = ext.get("ktorVersion").toString()
 val k9FormatVersion = "5.1.35"
 val fuelVersion = "2.3.1"
+val kafkaEmbeddedEnvVersion = ext.get("kafkaEmbeddedEnvVersion").toString()
+val kafkaVersion = ext.get("kafkaVersion").toString() // Alligned med version fra kafka-embedded-env
 
 plugins {
     kotlin("jvm") version "1.5.21"
@@ -38,8 +40,12 @@ dependencies {
     implementation ( "no.nav.k9:ettersendelse:$k9FormatVersion")
     implementation("org.glassfish:jakarta.el:3.0.3")
 
+    // kafka
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
+
     // Test
     testImplementation("no.nav.helse:dusseldorf-test-support:$dusseldorfKtorVersion")
+    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }

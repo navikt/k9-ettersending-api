@@ -196,6 +196,71 @@ class K9MellomlagringGateway(
         ).vedlegg
     }
 
+    internal suspend fun persisterVedlegg(
+        vedleggId: List<VedleggId>,
+        callId: CallId,
+        eier: DokumentEier
+    ) {
+        val authorizationHeader: String = cachedAccessTokenClient.getAccessToken(k9MellomlagringScope).asAuthoriationHeader()
+
+        coroutineScope {
+            val deferred = mutableListOf<Deferred<Unit>>()
+            vedleggId.forEach {
+                deferred.add(async {
+                    requestPersisterVedlegg(
+                        vedleggId = it,
+                        callId = callId,
+                        eier = eier,
+                        authorizationHeader = authorizationHeader
+                    )
+                })
+            }
+            deferred.awaitAll()
+        }
+    }
+
+
+    private suspend fun requestPersisterVedlegg(
+        vedleggId: VedleggId,
+        callId: CallId,
+        eier: DokumentEier,
+        authorizationHeader: String
+    ) {
+
+        val urlMedId = Url.buildURL(
+            baseUrl = komplettUrl,
+            pathParts = listOf(vedleggId.value, "persister")
+        )
+
+        val body = objectMapper.writeValueAsBytes(eier)
+
+        val httpRequest = urlMedId.toString()
+            .httpPut()
+            .body(body)
+            .header(
+                HttpHeaders.Authorization to authorizationHeader,
+                HttpHeaders.XCorrelationId to callId.value,
+                HttpHeaders.ContentType to "application/json"
+            )
+
+        val (request, _, result) = Operation.monitored(
+            app = TJENESTE,
+            operation = PERSISTER_VEDLEGG,
+            resultResolver = { 204 == it.second.statusCode }
+        ) {
+            httpRequest.awaitStringResponseResult()
+        }
+
+        result.fold(
+            { _ -> logger.info("Vellykket persistering av vedlegg") },
+            { error ->
+                logger.error("Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'")
+                logger.error("Feil ved persistering av vedlegg. $error")
+                throw IllegalStateException("Feil ved persistering av vedlegg.")
+            }
+        )
+    }
+
     internal suspend fun slettPersistertVedlegg(
         vedleggId: List<VedleggId>,
         callId: CallId,
@@ -262,71 +327,8 @@ class K9MellomlagringGateway(
         )
     }
 
-    internal suspend fun persisterVedlegger(
-        vedleggId: List<VedleggId>,
-        callId: CallId,
-        eier: DokumentEier
-    ) {
-        val authorizationHeader: String =
-            cachedAccessTokenClient.getAccessToken(k9MellomlagringScope).asAuthoriationHeader()
-
-        coroutineScope {
-            val deferred = mutableListOf<Deferred<Unit>>()
-            vedleggId.forEach {
-                deferred.add(async {
-                    requestPersisterVedlegg(
-                        vedleggId = it,
-                        callId = callId,
-                        eier = eier,
-                        authorizationHeader = authorizationHeader
-                    )
-                })
-            }
-            deferred.awaitAll()
-        }
-    }
-
-    private suspend fun requestPersisterVedlegg(
-        vedleggId: VedleggId,
-        callId: CallId,
-        eier: DokumentEier,
-        authorizationHeader: String
-    ) {
-
-        val urlMedId = Url.buildURL(
-            baseUrl = komplettUrl,
-            pathParts = listOf(vedleggId.value, "persister")
-        )
-
-        val body = objectMapper.writeValueAsBytes(eier)
-
-        val httpRequest = urlMedId.toString()
-            .httpPut()
-            .body(body)
-            .header(
-                HttpHeaders.Authorization to authorizationHeader,
-                HttpHeaders.XCorrelationId to callId.value,
-                HttpHeaders.ContentType to "application/json"
-            )
-
-        val (request, _, result) = Operation.monitored(
-            app = TJENESTE,
-            operation = PERSISTER_VEDLEGG,
-            resultResolver = { 204 == it.second.statusCode }
-        ) {
-            httpRequest.awaitStringResponseResult()
-        }
 
 
-        result.fold(
-            { _ -> logger.info("Vellykket persistering av vedlegg") },
-            { error ->
-                logger.error("Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'")
-                logger.error("Feil ved persistering av vedlegg. $error")
-                throw IllegalStateException("Feil ved persistering av vedlegg.")
-            }
-        )
-    }
 
     suspend fun hentVedlegg(vedleggId: VedleggId, idToken: IdToken, eier: DokumentEier, callId: CallId): Vedlegg? {
         val body = objectMapper.writeValueAsBytes(eier)

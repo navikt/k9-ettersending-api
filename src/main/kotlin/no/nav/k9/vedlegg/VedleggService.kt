@@ -80,6 +80,36 @@ class VedleggService(
         )
     }
 
+    internal suspend fun persisterVedlegg(
+        vedleggsUrls: List<URL>,
+        callId: CallId,
+        eier: DokumentEier
+    ) {
+        val vedleggsId = mutableListOf<VedleggId>()
+        vedleggsUrls.forEach { vedleggsId.add(vedleggIdFromUrl(it)) }
+
+        k9MellomlagringGateway.persisterVedlegg(
+            vedleggId = vedleggsId,
+            callId = callId,
+            eier = eier
+        )
+    }
+
+    suspend fun slettPersistertVedlegg(
+        vedleggsUrls: List<URL>,
+        callId: CallId,
+        eier: DokumentEier
+    ) {
+        val vedleggsId = mutableListOf<VedleggId>()
+        vedleggsUrls.forEach { vedleggsId.add(vedleggIdFromUrl(it)) }
+
+        k9MellomlagringGateway.slettPersistertVedlegg(
+            vedleggId = vedleggsId,
+            callId = callId,
+            eier = eier
+        )
+    }
+
     private fun vedleggIdFromUrl(url: URL) : VedleggId {
         return VedleggId(url.path.substringAfterLast("/"))
     }
