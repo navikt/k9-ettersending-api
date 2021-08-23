@@ -42,8 +42,9 @@ class EttersendingService(
         val dokumentEier = DokumentEier(søker.fødselsnummer)
         håndterVedlegg(idToken, callId, dokumentEier, ettersending.vedlegg)
 
-        val k9Format = ettersending.tilK9Format(ZonedDateTime.now(ZoneOffset.UTC), søker)
-        val komplettEttersending = ettersending.tilKomplettEttersending(k9Format, søker, k9MellomLagringIngress)
+        val mottatt = ZonedDateTime.now(ZoneOffset.UTC)
+        val k9Format = ettersending.tilK9Format(mottatt, søker)
+        val komplettEttersending = ettersending.tilKomplettEttersending(k9Format, søker, k9MellomLagringIngress, mottatt)
 
         try {
             kafkaProducer.produserKafkaMelding(komplettEttersending, metadata)

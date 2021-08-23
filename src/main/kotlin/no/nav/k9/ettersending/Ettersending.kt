@@ -6,7 +6,6 @@ import no.nav.k9.ettersendelse.Ettersendelse
 import no.nav.k9.soker.Søker
 import java.net.URI
 import java.net.URL
-import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -19,27 +18,27 @@ data class Ettersending(
     val beskrivelse: String?,
     val søknadstype: Søknadstype
 ) {
-    fun tilKomplettEttersending(k9Format: Ettersendelse, søker: Søker, k9MellomlagringIngress: URI) = KomplettEttersending(
-        søker = søker,
-        språk = språk,
-        mottatt = ZonedDateTime.now(ZoneOffset.UTC),
-        vedlegg = vedlegg.tilK9MellomLagringUrl(k9MellomlagringIngress),
-        søknadId = søknadId,
-        harForståttRettigheterOgPlikter = harForståttRettigheterOgPlikter,
-        harBekreftetOpplysninger = harBekreftetOpplysninger,
-        beskrivelse = beskrivelse,
-        søknadstype = søknadstype,
-        k9Format = k9Format
-    )
+    fun tilKomplettEttersending(k9Format: Ettersendelse, søker: Søker, k9MellomlagringIngress: URI, mottatt: ZonedDateTime) =
+        KomplettEttersending(
+            søker = søker,
+            språk = språk,
+            mottatt = mottatt,
+            vedlegg = vedlegg.tilK9MellomLagringUrl(k9MellomlagringIngress),
+            søknadId = søknadId,
+            harForståttRettigheterOgPlikter = harForståttRettigheterOgPlikter,
+            harBekreftetOpplysninger = harBekreftetOpplysninger,
+            beskrivelse = beskrivelse,
+            søknadstype = søknadstype,
+            k9Format = k9Format
+        )
+}
 
-    // TODO: 20/08/2021 Lage test som verifiserer at omgjøringen blir til riktig url med ingress og ikke service discovery
-    private fun List<URL>.tilK9MellomLagringUrl(baseUrl: URI): List<URL> = map {
-        val idFraUrl = it.path.substringAfterLast("/")
-        Url.buildURL(
-            baseUrl = baseUrl,
-            pathParts = listOf(idFraUrl)
-        ).toURL()
-    }
+fun List<URL>.tilK9MellomLagringUrl(baseUrl: URI): List<URL> = map {
+    val idFraUrl = it.path.substringAfterLast("/")
+    Url.buildURL(
+        baseUrl = baseUrl,
+        pathParts = listOf(idFraUrl)
+    ).toURL()
 }
 
 enum class Søknadstype {
