@@ -621,6 +621,6 @@ class ApplicationTest {
             assertEquals(ettersendingSendtInn.getString("beskrivelse"), ettersendingFraTopic.getString("beskrivelse"))
         }
 
-        assertEquals(ettersendingSendtInn.getJSONArray("vedlegg").length(),ettersendingFraTopic.getJSONArray("vedlegg").length())
+        assertEquals(ettersendingSendtInn.getJSONArray("vedlegg").length(),ettersendingFraTopic.getJSONArray("vedleggUrls").length())
     }
 }

@@ -18,17 +18,24 @@ data class Ettersending(
     val beskrivelse: String?,
     val søknadstype: Søknadstype
 ) {
-    fun tilKomplettEttersending(k9Format: Ettersendelse, søker: Søker, k9MellomlagringIngress: URI, mottatt: ZonedDateTime) =
+    fun tilKomplettEttersending(
+        k9Format: Ettersendelse,
+        søker: Søker,
+        k9MellomlagringIngress: URI,
+        mottatt: ZonedDateTime,
+        titler: List<String>
+    ) =
         KomplettEttersending(
             søker = søker,
             språk = språk,
             mottatt = mottatt,
-            vedlegg = vedlegg.tilK9MellomLagringUrl(k9MellomlagringIngress),
+            vedleggUrls = vedlegg.tilK9MellomLagringUrl(k9MellomlagringIngress),
             søknadId = søknadId,
             harForståttRettigheterOgPlikter = harForståttRettigheterOgPlikter,
             harBekreftetOpplysninger = harBekreftetOpplysninger,
             beskrivelse = beskrivelse,
             søknadstype = søknadstype,
+            titler = titler,
             k9Format = k9Format
         )
 }

@@ -10,10 +10,11 @@ data class KomplettEttersending (
     val søker: Søker,
     val språk: String,
     val mottatt: ZonedDateTime,
-    val vedlegg: List<URL>,
+    val vedleggUrls: List<URL>,
     val harForståttRettigheterOgPlikter: Boolean,
     val harBekreftetOpplysninger: Boolean,
     val beskrivelse: String?,
     val søknadstype: Søknadstype,
+    val titler: List<String>,
     val k9Format: Ettersendelse
 )

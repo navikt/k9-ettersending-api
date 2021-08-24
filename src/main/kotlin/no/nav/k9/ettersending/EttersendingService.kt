@@ -14,7 +14,6 @@ import no.nav.k9.vedlegg.VedleggService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
-import java.net.URL
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
@@ -39,12 +38,18 @@ class EttersendingService(
         val søker: Søker = søkerService.getSoker(idToken = idToken, callId = callId)
         søker.validate()
 
+        logger.info("Validerer ${ettersending.vedlegg.size} vedlegg")
         val dokumentEier = DokumentEier(søker.fødselsnummer)
-        håndterVedlegg(idToken, callId, dokumentEier, ettersending.vedlegg)
+        val vedleggHentet = vedleggService.hentVedlegg(ettersending.vedlegg, idToken, callId, DokumentEier(søker.fødselsnummer))
+        vedleggHentet.validerVedlegg(ettersending.vedlegg)
 
+        logger.info("Persisterer vedlegg")
+        vedleggService.persisterVedlegg(ettersending.vedlegg, callId, dokumentEier)
+
+        val titler = vedleggHentet.map { it.title }
         val mottatt = ZonedDateTime.now(ZoneOffset.UTC)
         val k9Format = ettersending.tilK9Format(mottatt, søker)
-        val komplettEttersending = ettersending.tilKomplettEttersending(k9Format, søker, k9MellomLagringIngress, mottatt)
+        val komplettEttersending = ettersending.tilKomplettEttersending(k9Format, søker, k9MellomLagringIngress, mottatt, titler)
 
         try {
             kafkaProducer.produserKafkaMelding(komplettEttersending, metadata)
@@ -53,20 +58,6 @@ class EttersendingService(
             vedleggService.slettPersistertVedlegg(ettersending.vedlegg, callId, dokumentEier)
             throw MeldingRegistreringFeiletException("Feilet ved å legge melding på Kafka")
         }
-    }
-
-    private suspend fun håndterVedlegg(
-        idToken: IdToken,
-        callId: CallId,
-        dokumentEier: DokumentEier,
-        vedlegg: List<URL>
-    ) {
-
-        logger.info("Validerer ${vedlegg.size} vedlegg")
-        vedleggService.hentVedlegg(vedlegg, idToken, callId, dokumentEier).validerVedlegg(vedlegg)
-
-        logger.info("Persisterer vedlegg")
-        vedleggService.persisterVedlegg(vedlegg, callId, dokumentEier)
     }
 }
 
