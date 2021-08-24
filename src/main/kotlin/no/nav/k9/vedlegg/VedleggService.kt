@@ -19,7 +19,7 @@ class VedleggService(
         vedlegg: Vedlegg,
         idToken: IdToken,
         callId: CallId
-    ) : VedleggId {
+    ): VedleggId {
 
         return k9MellomlagringGateway.lagreVedlegg(
             vedlegg = vedlegg,
@@ -34,7 +34,7 @@ class VedleggService(
         idToken: IdToken,
         callId: CallId,
         eier: DokumentEier
-    ) : Vedlegg? {
+    ): Vedlegg? {
 
         return k9MellomlagringGateway.hentVedlegg(
             vedleggId = vedleggId,
@@ -49,16 +49,18 @@ class VedleggService(
         idToken: IdToken,
         callId: CallId,
         eier: DokumentEier
-    ) : List<Vedlegg> {
+    ): List<Vedlegg> {
         val vedlegg = coroutineScope {
             val futures = mutableListOf<Deferred<Vedlegg?>>()
             vedleggUrls.forEach {
-                futures.add(async { hentVedlegg(
-                    vedleggId = vedleggIdFromUrl(it),
-                    idToken = idToken,
-                    callId = callId,
-                    eier = eier
-                )})
+                futures.add(async {
+                    hentVedlegg(
+                        vedleggId = vedleggIdFromUrl(it),
+                        idToken = idToken,
+                        callId = callId,
+                        eier = eier
+                    )
+                })
 
             }
             futures.awaitAll().filter { it != null }
@@ -85,8 +87,7 @@ class VedleggService(
         callId: CallId,
         eier: DokumentEier
     ) {
-        val vedleggsId = mutableListOf<VedleggId>()
-        vedleggsUrls.forEach { vedleggsId.add(vedleggIdFromUrl(it)) }
+        val vedleggsId = vedleggsUrls.map { vedleggIdFromUrl(it) }
 
         k9MellomlagringGateway.persisterVedlegg(
             vedleggId = vedleggsId,
@@ -100,8 +101,7 @@ class VedleggService(
         callId: CallId,
         eier: DokumentEier
     ) {
-        val vedleggsId = mutableListOf<VedleggId>()
-        vedleggsUrls.forEach { vedleggsId.add(vedleggIdFromUrl(it)) }
+        val vedleggsId = vedleggsUrls.map { vedleggIdFromUrl(it) }
 
         k9MellomlagringGateway.slettPersistertVedlegg(
             vedleggId = vedleggsId,
@@ -110,7 +110,7 @@ class VedleggService(
         )
     }
 
-    private fun vedleggIdFromUrl(url: URL) : VedleggId {
+    private fun vedleggIdFromUrl(url: URL): VedleggId {
         return VedleggId(url.path.substringAfterLast("/"))
     }
 }

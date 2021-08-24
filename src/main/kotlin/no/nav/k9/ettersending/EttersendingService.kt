@@ -32,7 +32,6 @@ class EttersendingService(
         metadata: Metadata
     ) {
         logger.info(formaterStatuslogging(ettersending.søknadId, "registreres"))
-
         ettersending.valider()
 
         val søker: Søker = søkerService.getSoker(idToken = idToken, callId = callId)
