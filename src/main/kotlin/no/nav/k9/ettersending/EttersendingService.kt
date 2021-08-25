@@ -53,8 +53,8 @@ class EttersendingService(
         try {
             kafkaProducer.produserKafkaMelding(komplettEttersending, metadata)
         } catch (exception: Exception) {
-            logger.info("Feilet ved å legge melding på Kafka. Sletter persisterte vedlegg")
-            vedleggService.slettPersistertVedlegg(ettersending.vedlegg, callId, dokumentEier)
+            logger.info("Feilet ved å legge melding på Kafka. Fjerner hold på persisterte vedlegg")
+            vedleggService.fjernHoldPåPersistertVedlegg(ettersending.vedlegg, callId, dokumentEier)
             throw MeldingRegistreringFeiletException("Feilet ved å legge melding på Kafka")
         }
     }

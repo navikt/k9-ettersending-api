@@ -96,14 +96,14 @@ class VedleggService(
         )
     }
 
-    suspend fun slettPersistertVedlegg(
+    suspend fun fjernHoldPåPersistertVedlegg(
         vedleggsUrls: List<URL>,
         callId: CallId,
         eier: DokumentEier
     ) {
         val vedleggsId = vedleggsUrls.map { vedleggIdFromUrl(it) }
 
-        k9MellomlagringGateway.slettPersistertVedlegg(
+        k9MellomlagringGateway.fjernHoldPåPersistertVedlegg(
             vedleggId = vedleggsId,
             callId = callId,
             eier = eier

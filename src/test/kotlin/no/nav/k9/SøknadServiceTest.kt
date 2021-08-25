@@ -52,7 +52,7 @@ internal class SøknadServiceTest{
     }
 
     @Test
-    internal fun `Tester at den sletter persistert vedlegg dersom kafka feiler`() {
+    internal fun `Tester at den fjerner hold på persistert vedlegg dersom kafka feiler`() {
         assertThrows<MeldingRegistreringFeiletException> {
             runBlocking {
                 coEvery {søkerService.getSoker(any(), any()) } returns Søker(
@@ -77,6 +77,6 @@ internal class SøknadServiceTest{
             }
         }
 
-        coVerify(exactly = 1) { vedleggService.slettPersistertVedlegg(any(), any(), any()) }
+        coVerify(exactly = 1) { vedleggService.fjernHoldPåPersistertVedlegg(any(), any(), any()) }
     }
 }
