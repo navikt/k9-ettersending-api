@@ -19,8 +19,8 @@ import no.nav.k9.soker.SøkerService
 import no.nav.k9.vedlegg.DokumentEier
 import no.nav.k9.vedlegg.Vedlegg
 import no.nav.k9.vedlegg.VedleggService
-import org.junit.Before
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
 import java.net.URI
 import java.time.LocalDate
@@ -38,7 +38,7 @@ internal class SøknadServiceTest{
 
     lateinit var ettersendingService: EttersendingService
 
-    @Before
+    @BeforeEach
     internal fun setUp() {
         MockKAnnotations.init(this)
         ettersendingService = EttersendingService(
