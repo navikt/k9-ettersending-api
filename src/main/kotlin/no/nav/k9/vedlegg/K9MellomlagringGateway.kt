@@ -44,7 +44,7 @@ class K9MellomlagringGateway(
         private const val HENTE_VEDLEGG_OPERATION = "hente-vedlegg"
         private const val LAGRE_VEDLEGG_OPERATION = "lagre-vedlegg"
         private const val PERSISTER_VEDLEGG = "persister-vedlegg"
-        private const val SLETT_PERSISTERT_VEDLEGG = "slett-persistert-vedlegg"
+        private const val FJERNE_HOLD_PÅ_PERSISTERT_VEDLEGG = "fjerne-hold-på-persistert-vedlegg"
         private const val TJENESTE = "k9-ettersending-api"
     }
 
@@ -196,79 +196,12 @@ class K9MellomlagringGateway(
         ).vedlegg
     }
 
-    internal suspend fun slettPersistertVedlegg(
+    internal suspend fun persisterVedlegg(
         vedleggId: List<VedleggId>,
         callId: CallId,
         eier: DokumentEier
     ) {
-        val authorizationHeader: String =
-            cachedAccessTokenClient.getAccessToken(k9MellomlagringScope).asAuthoriationHeader()
-
-        coroutineScope {
-            val deferred = mutableListOf<Deferred<Unit>>()
-            vedleggId.forEach {
-                deferred.add(async {
-                    requestSlettPersisterVedlegg(
-                        vedleggId = it,
-                        callId = callId,
-                        eier = eier,
-                        authorizationHeader = authorizationHeader
-                    )
-                })
-            }
-            deferred.awaitAll()
-        }
-    }
-
-    private suspend fun requestSlettPersisterVedlegg(
-        vedleggId: VedleggId,
-        callId: CallId,
-        eier: DokumentEier,
-        authorizationHeader: String
-    ) {
-
-        val urlMedId = Url.buildURL(
-            baseUrl = komplettUrl,
-            pathParts = listOf(vedleggId.value)
-        )
-
-        val body = objectMapper.writeValueAsBytes(eier)
-
-        val httpRequest = urlMedId.toString()
-            .httpDelete()
-            .body(body)
-            .header(
-                HttpHeaders.Authorization to authorizationHeader,
-                HttpHeaders.XCorrelationId to callId.value,
-                HttpHeaders.ContentType to "application/json"
-            )
-
-        val (request, _, result) = Operation.monitored(
-            app = TJENESTE,
-            operation = SLETT_PERSISTERT_VEDLEGG,
-            resultResolver = { 204 == it.second.statusCode }
-        ) {
-            httpRequest.awaitStringResponseResult()
-        }
-
-
-        result.fold(
-            { _ -> logger.info("Vellykket sletting av persistert vedlegg") },
-            { error ->
-                logger.error("Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'")
-                logger.error("Feil ved sletting av persistert vedlegg. $error")
-                throw IllegalStateException("Feil ved sletting av persistert vedlegg.")
-            }
-        )
-    }
-
-    internal suspend fun persisterVedlegger(
-        vedleggId: List<VedleggId>,
-        callId: CallId,
-        eier: DokumentEier
-    ) {
-        val authorizationHeader: String =
-            cachedAccessTokenClient.getAccessToken(k9MellomlagringScope).asAuthoriationHeader()
+        val authorizationHeader: String = cachedAccessTokenClient.getAccessToken(k9MellomlagringScope).asAuthoriationHeader()
 
         coroutineScope {
             val deferred = mutableListOf<Deferred<Unit>>()
@@ -285,6 +218,7 @@ class K9MellomlagringGateway(
             deferred.awaitAll()
         }
     }
+
 
     private suspend fun requestPersisterVedlegg(
         vedleggId: VedleggId,
@@ -317,13 +251,77 @@ class K9MellomlagringGateway(
             httpRequest.awaitStringResponseResult()
         }
 
-
         result.fold(
             { _ -> logger.info("Vellykket persistering av vedlegg") },
             { error ->
                 logger.error("Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'")
                 logger.error("Feil ved persistering av vedlegg. $error")
                 throw IllegalStateException("Feil ved persistering av vedlegg.")
+            }
+        )
+    }
+
+    internal suspend fun fjernHoldPåPersistertVedlegg(
+        vedleggId: List<VedleggId>,
+        callId: CallId,
+        eier: DokumentEier
+    ) {
+        val authorizationHeader: String =
+            cachedAccessTokenClient.getAccessToken(k9MellomlagringScope).asAuthoriationHeader()
+
+        coroutineScope {
+            val deferred = mutableListOf<Deferred<Unit>>()
+            vedleggId.forEach {
+                deferred.add(async {
+                    requestFjerneHoldPåPersisterVedlegg(
+                        vedleggId = it,
+                        callId = callId,
+                        eier = eier,
+                        authorizationHeader = authorizationHeader
+                    )
+                })
+            }
+            deferred.awaitAll()
+        }
+    }
+
+    private suspend fun requestFjerneHoldPåPersisterVedlegg(
+        vedleggId: VedleggId,
+        callId: CallId,
+        eier: DokumentEier,
+        authorizationHeader: String
+    ) {
+
+        val urlMedId = Url.buildURL(
+            baseUrl = komplettUrl,
+            pathParts = listOf("persistert", vedleggId.value)
+        )
+
+        val body = objectMapper.writeValueAsBytes(eier)
+
+        val httpRequest = urlMedId.toString()
+            .httpPut()
+            .body(body)
+            .header(
+                HttpHeaders.Authorization to authorizationHeader,
+                HttpHeaders.XCorrelationId to callId.value,
+                HttpHeaders.ContentType to "application/json"
+            )
+
+        val (request, _, result) = Operation.monitored(
+            app = TJENESTE,
+            operation = FJERNE_HOLD_PÅ_PERSISTERT_VEDLEGG,
+            resultResolver = { 200 == it.second.statusCode }
+        ) {
+            httpRequest.awaitStringResponseResult()
+        }
+
+
+        result.fold(
+            { _ -> logger.info("Vellykket fjerning av hold på persistert vedlegg") },
+            { error ->
+                logger.error("Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'")
+                logger.error("Feil ved fjerning av hold påpersistert vedlegg. $error")
             }
         )
     }

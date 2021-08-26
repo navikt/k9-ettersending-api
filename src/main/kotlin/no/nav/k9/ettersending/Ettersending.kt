@@ -1,6 +1,12 @@
 package no.nav.k9.ettersending
 
+import io.ktor.http.*
+import no.nav.helse.dusseldorf.ktor.client.buildURL
+import no.nav.k9.ettersendelse.Ettersendelse
+import no.nav.k9.soker.Søker
+import java.net.URI
 import java.net.URL
+import java.time.ZonedDateTime
 import java.util.*
 
 data class Ettersending(
@@ -11,9 +17,38 @@ data class Ettersending(
     val harBekreftetOpplysninger: Boolean,
     val beskrivelse: String?,
     val søknadstype: Søknadstype
-)
+) {
+    fun tilKomplettEttersending(
+        k9Format: Ettersendelse,
+        søker: Søker,
+        k9MellomlagringIngress: URI,
+        mottatt: ZonedDateTime,
+        titler: List<String>
+    ) =
+        KomplettEttersending(
+            søker = søker,
+            språk = språk,
+            mottatt = mottatt,
+            vedleggUrls = vedlegg.tilK9MellomLagringUrl(k9MellomlagringIngress),
+            søknadId = søknadId,
+            harForståttRettigheterOgPlikter = harForståttRettigheterOgPlikter,
+            harBekreftetOpplysninger = harBekreftetOpplysninger,
+            beskrivelse = beskrivelse,
+            søknadstype = søknadstype,
+            titler = titler,
+            k9Format = k9Format
+        )
+}
 
-enum class Søknadstype{
+fun List<URL>.tilK9MellomLagringUrl(baseUrl: URI): List<URL> = map {
+    val idFraUrl = it.path.substringAfterLast("/")
+    Url.buildURL(
+        baseUrl = baseUrl,
+        pathParts = listOf(idFraUrl)
+    ).toURL()
+}
+
+enum class Søknadstype {
     PLEIEPENGER_SYKT_BARN,
     OMP_UTV_KS, // Omsorgspenger utvidet rett - kronisk syke eller funksjonshemming.
     OMP_UT_SNF, // Omsorgspenger utbetaling SNF ytelse.

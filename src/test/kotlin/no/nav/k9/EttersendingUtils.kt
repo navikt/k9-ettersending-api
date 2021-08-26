@@ -2,11 +2,11 @@ package no.nav.k9
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.k9.ettersending.Ettersending
-import no.nav.k9.ettersending.KomplettEttersending
 import no.nav.k9.ettersending.Søknadstype
 import no.nav.k9.soker.Søker
 import java.net.URL
 import java.time.LocalDate
+import java.util.*
 
 internal object EttersendingUtils {
     internal val objectMapper = jacksonObjectMapper().k9EttersendingKonfiguert()
@@ -20,7 +20,8 @@ internal object EttersendingUtils {
         etternavn = "Doffen"
     )
 
-    internal val gyldigEttersending = Ettersending(
+    fun hentGyldigEttersending() = Ettersending(
+        søknadId  = UUID.randomUUID().toString(),
         språk = "nb",
         søknadstype = Søknadstype.OMP_UTV_KS,
         beskrivelse = "Masse tekst",
@@ -41,6 +42,7 @@ internal object EttersendingUtils {
             return """
                 {
                   "språk": "nb",
+                  "søknadId" : "${UUID.randomUUID().toString()}",
                   "vedlegg": [
                     "$vedleggUrl1",
                     "$vedleggUrl2"
@@ -55,4 +57,4 @@ internal object EttersendingUtils {
 }
 
 internal fun Ettersending.somJson() = EttersendingUtils.objectMapper.writeValueAsString(this)
-internal fun KomplettEttersending.somJson() = EttersendingUtils.objectMapper.writeValueAsString(this)
+fun Any.somJson() = objectMapper.writeValueAsString(this)

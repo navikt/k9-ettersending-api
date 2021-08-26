@@ -8,50 +8,30 @@ import io.ktor.routing.*
 import no.nav.k9.ETTERSEND_URL
 import no.nav.k9.VALIDERING_URL
 import no.nav.k9.general.auth.IdTokenProvider
+import no.nav.k9.general.formaterStatuslogging
 import no.nav.k9.general.getCallId
-import no.nav.k9.k9format.tilK9Format
-import no.nav.k9.soker.Søker
-import no.nav.k9.soker.SøkerService
-import no.nav.k9.soker.validate
+import no.nav.k9.general.getMetadata
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
 
 private val logger: Logger = LoggerFactory.getLogger("nav.ettersendingApis")
 
 fun Route.ettersendingApis(
     ettersendingService: EttersendingService,
-    søkerService: SøkerService,
     idTokenProvider: IdTokenProvider
 ) {
 
     post(ETTERSEND_URL){
-        logger.info("Mottatt ettersending.")
         val ettersending = call.receive<Ettersending>()
-        logger.trace("Ettersending mappet.")
-
-        val idToken = idTokenProvider.getIdToken(call)
-        val callId = call.getCallId()
-        val mottatt = ZonedDateTime.now(ZoneOffset.UTC)
-
-        val søker: Søker = søkerService.getSoker(idToken = idToken, callId = callId)
-        søker.validate()
-
-        logger.info("Mapper om til K9Format")
-        val k9Format = ettersending.tilK9Format(mottatt, søker)
-
-        ettersending.valider()
-        logger.trace("Validering OK. Registrerer ettersending.")
+        logger.info(formaterStatuslogging(ettersending.søknadId, "av typen ${ettersending.søknadstype} mottatt"))
 
         ettersendingService.registrer(
             ettersending = ettersending,
-            k9Format = k9Format,
+            idToken = idTokenProvider.getIdToken(call),
             callId = call.getCallId(),
-            idToken = idTokenProvider.getIdToken(call)
+            metadata = call.getMetadata()
         )
 
-        logger.trace("Ettersending registrert.")
         call.respond(HttpStatusCode.Accepted)
     }
 

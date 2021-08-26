@@ -32,6 +32,7 @@ import no.nav.k9.ettersending.ettersendingApis
 import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.auth.IdTokenStatusPages
 import no.nav.k9.general.systemauth.AccessTokenClientResolver
+import no.nav.k9.kafka.KafkaProducer
 import no.nav.k9.soker.SøkerGateway
 import no.nav.k9.soker.SøkerService
 import no.nav.k9.soker.søkerApis
@@ -108,12 +109,6 @@ fun Application.k9EttersendingApi() {
 
         val vedleggService = VedleggService(k9MellomlagringGateway = k9MellomlagringGateway)
 
-        val k9EttersendingMottakGateway = K9EttersendingMottakGateway(
-            baseUrl = configuration.getK9EttersendingMottakBaseUrl(),
-            accessTokenClient = accessTokenClientResolver.accessTokenClient(),
-            k9EttersendingMottakClientId = configuration.k9EttersendingMottakClientId()
-        )
-
         val sokerGateway = SøkerGateway(
             baseUrl = configuration.getK9OppslagUrl()
         )
@@ -121,6 +116,16 @@ fun Application.k9EttersendingApi() {
         val søkerService = SøkerService(
             søkerGateway = sokerGateway
         )
+
+        val kafkaProducer = KafkaProducer(
+            kafkaConfig = configuration.getKafkaConfig()
+        )
+
+        environment.monitor.subscribe(ApplicationStopping) {
+            logger.info("Stopper Kafka Producer.")
+            kafkaProducer.stop()
+            logger.info("Kafka Producer Stoppet.")
+        }
 
         authenticate(*issuers.allIssuers()) {
 
@@ -136,26 +141,22 @@ fun Application.k9EttersendingApi() {
 
             ettersendingApis(
                 idTokenProvider = idTokenProvider,
-                søkerService = søkerService,
                 ettersendingService = EttersendingService(
-                    k9EttersendingMottakGateway = k9EttersendingMottakGateway,
                     søkerService = søkerService,
-                    vedleggService = vedleggService
+                    vedleggService = vedleggService,
+                    k9MellomLagringIngress = configuration.getK9MellomlagringIngress(),
+                    kafkaProducer = kafkaProducer
                 )
             )
         }
 
         val healthService = HealthService(
             healthChecks = setOf(
-                k9EttersendingMottakGateway,
+                kafkaProducer,
                 HttpRequestHealthCheck(
                     mapOf(
                         Url.buildURL(
                             baseUrl = configuration.getK9MellomlagringUrl(),
-                            pathParts = listOf("health")
-                        ) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK),
-                        Url.buildURL(
-                            baseUrl = configuration.getK9EttersendingMottakBaseUrl(),
                             pathParts = listOf("health")
                         ) to HttpRequestHealthConfig(expectedStatus = HttpStatusCode.OK)
                     )

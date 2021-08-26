@@ -8,7 +8,6 @@ import io.ktor.http.*
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 
 internal const val k9OppslagPath = "/k9-selvbetjening-oppslag-mock"
-private const val k9EttersendingMottakPath = "/k9-ettersending-mottak-mock"
 private const val k9MellomlagringPath = "/k9-mellomlagring-mock"
 
 internal fun WireMockBuilder.k9EttersendingApiConfig() = wireMockConfiguration {
@@ -49,19 +48,7 @@ private fun WireMockServer.stubHealthEndpoint(
     return this
 }
 
-internal fun WireMockServer.stubK9EttersendingMottakHealth() = stubHealthEndpoint("$k9EttersendingMottakPath/health")
 internal fun WireMockServer.stubOppslagHealth() = stubHealthEndpoint("$k9OppslagPath/health")
-
-internal fun WireMockServer.stubLeggSoknadTilProsessering(path: String) : WireMockServer{
-    WireMock.stubFor(
-        WireMock.post(WireMock.urlMatching(".*$k9EttersendingMottakPath/$path"))
-            .willReturn(
-                WireMock.aResponse()
-                    .withStatus(202)
-            )
-    )
-    return this
-}
 
 internal fun WireMockServer.stubK9Mellomlagring() : WireMockServer{
     WireMock.stubFor(
@@ -75,5 +62,4 @@ internal fun WireMockServer.stubK9Mellomlagring() : WireMockServer{
 }
 
 internal fun WireMockServer.getK9OppslagUrl() = baseUrl() + k9OppslagPath
-internal fun WireMockServer.getK9EttersendingMottakUrl() = baseUrl() + k9EttersendingMottakPath
 internal fun WireMockServer.getK9MellomlagringUrl() = baseUrl() + k9MellomlagringPath + "/v1/dokument"

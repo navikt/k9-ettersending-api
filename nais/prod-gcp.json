@@ -6,6 +6,7 @@
   "minReplicas": "1",
   "maxReplicas": "2",
   "tenant": "nav.no",
+  "kafka-pool": "nav-prod",
   "ingresses": [
     "https://k9-ettersending-api.nav.no"
   ],
@@ -13,17 +14,15 @@
     "api-gw.oera.no",
     "oauth2.googleapis.com",
     "login.microsoftonline.com",
-    "k9-selvbetjening-oppslag.prod-fss-pub.nais.io",
-    "k9-ettersending-mottak.prod-fss-pub.nais.io"
+    "k9-selvbetjening-oppslag.prod-fss-pub.nais.io"
   ],
   "env": {
     "CORS_ADDRESSES": "https://www.nav.no",
     "LOGIN_SERVICE_V1_DISCOVERY_ENDPOINT": "https://login.microsoftonline.com/navnob2c.onmicrosoft.com/discovery/v2.0/.well-known/openid-configuration?p=b2c_1a_idporten",
     "COOKIE_NAME": "selvbetjening-idtoken",
     "K9_OPPSLAG_REGISTER_URL": "https://k9-selvbetjening-oppslag.prod-fss-pub.nais.io",
-    "K9_ETTERSENDING_MOTTAK_BASE_URL": "https://k9-ettersending-mottak.prod-fss-pub.nais.io",
-    "K9_ETTERSENDING_MOTTAK_CLIENT_ID": "b5018e50-4f5e-4b4d-8e6a-8c9983fefcd2/.default",
     "K9_MELLOMLAGRING_SERVICE_DISCOVERY": "http://k9-mellomlagring",
+    "K9_MELLOMLAGRING_INGRESS": "https://k9-mellomlagring.intern.nav.no/v1/dokument",
     "K9_MELLOMLAGRING_CLIENT_ID": "19aaf0b2-f40a-4a64-bf7f-fd2dd62f0552/.default"
   },
   "slack-channel": "sif-alerts",

@@ -1,9 +1,12 @@
 package no.nav.k9
 
-import io.ktor.server.testing.withApplication
+import io.ktor.server.testing.*
 import no.nav.helse.dusseldorf.testsupport.asArguments
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
-import no.nav.k9.wiremock.*
+import no.nav.k9.wiremock.k9EttersendingApiConfig
+import no.nav.k9.wiremock.stubK9Mellomlagring
+import no.nav.k9.wiremock.stubK9OppslagSoker
+import no.nav.k9.wiremock.stubOppslagHealth
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -22,9 +25,7 @@ class ApplicationWithMocks {
                 .withLoginServiceSupport()
                 .k9EttersendingApiConfig()
                 .build()
-                .stubK9EttersendingMottakHealth()
                 .stubOppslagHealth()
-                .stubLeggSoknadTilProsessering("v1/ettersend")
                 .stubK9Mellomlagring()
                 .stubK9OppslagSoker()
 

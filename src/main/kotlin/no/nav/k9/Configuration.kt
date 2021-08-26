@@ -6,8 +6,10 @@ import no.nav.helse.dusseldorf.ktor.auth.EnforceEqualsOrContains
 import no.nav.helse.dusseldorf.ktor.auth.issuers
 import no.nav.helse.dusseldorf.ktor.auth.withAdditionalClaimRules
 import no.nav.helse.dusseldorf.ktor.core.getOptionalList
+import no.nav.helse.dusseldorf.ktor.core.getOptionalString
 import no.nav.helse.dusseldorf.ktor.core.getRequiredList
 import no.nav.helse.dusseldorf.ktor.core.getRequiredString
+import no.nav.k9.kafka.KafkaConfig
 import java.net.URI
 
 @KtorExperimentalAPI
@@ -40,9 +42,28 @@ data class Configuration(val config : ApplicationConfig) {
 
     internal fun getK9MellomlagringUrl() = URI(config.getRequiredString("nav.gateways.k9_mellomlagring_url", secret = false))
     internal fun getK9MellomlagringScopes() = getScopesFor("k9-mellomlagring-client-id")
-
-    internal fun getK9EttersendingMottakBaseUrl() = URI(config.getRequiredString("nav.gateways.k9_ettersending_mottak_base_url", secret = false))
-    internal fun k9EttersendingMottakClientId() = getScopesFor("k9-ettersending-mottak-client-id")
+    internal fun getK9MellomlagringIngress() = URI(config.getRequiredString("nav.gateways.k9_mellomlagring_ingress", secret = false))
 
     private fun getScopesFor(operation: String) = config.getRequiredList("nav.auth.scopes.$operation", secret = false, builder = { it }).toSet()
+
+    internal fun getKafkaConfig() = config.getRequiredString("nav.kafka.bootstrap_servers", secret = false).let { bootstrapServers ->
+        val trustStore =
+            config.getOptionalString("nav.kafka.truststore_path", secret = false)?.let { trustStorePath ->
+                config.getOptionalString("nav.kafka.credstore_password", secret = true)?.let { credstorePassword ->
+                    Pair(trustStorePath, credstorePassword)
+                }
+            }
+
+        val keyStore = config.getOptionalString("nav.kafka.keystore_path", secret = false)?.let { keystorePath ->
+            config.getOptionalString("nav.kafka.credstore_password", secret = true)?.let { credstorePassword ->
+                Pair(keystorePath, credstorePassword)
+            }
+        }
+
+        KafkaConfig(
+            bootstrapServers = bootstrapServers,
+            trustStore = trustStore,
+            keyStore = keyStore
+        )
+    }
 }
