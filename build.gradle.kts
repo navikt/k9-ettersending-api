@@ -38,7 +38,7 @@ dependencies {
 
     // K9-format
     implementation ( "no.nav.k9:ettersendelse:$k9FormatVersion")
-    implementation("org.glassfish:jakarta.el:3.0.3")
+    implementation("org.glassfish:jakarta.el:4.0.2")
 
     // kafka
     implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
