@@ -3,11 +3,11 @@ package no.nav.k9.k9format
 import no.nav.k9.EttersendingUtils
 import no.nav.k9.ettersendelse.Ettersendelse
 import no.nav.k9.ettersending.Søknadstype
-import org.junit.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
+import kotlin.test.Test
 
 class K9FormatTest {
 

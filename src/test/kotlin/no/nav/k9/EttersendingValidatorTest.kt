@@ -4,7 +4,8 @@ import no.nav.helse.dusseldorf.ktor.core.Throwblem
 import no.nav.k9.EttersendingUtils.hentGyldigEttersending
 import no.nav.k9.ettersending.Søknadstype
 import no.nav.k9.ettersending.valider
-import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import kotlin.test.Test
 
 class EttersendingValidatorTest{
 
@@ -13,28 +14,39 @@ class EttersendingValidatorTest{
         hentGyldigEttersending().valider()
     }
 
-    @Test(expected = Throwblem::class)
+    @Test
     fun `Skal feile dersom harBekreftetOpplysninger er false`(){
-        hentGyldigEttersending().copy(harBekreftetOpplysninger = false).valider()
+        Assertions.assertThrows(Throwblem::class.java){
+            hentGyldigEttersending().copy(harBekreftetOpplysninger = false).valider()
+        }
     }
 
-    @Test(expected = Throwblem::class)
+    @Test
     fun `Skal feile dersom harForståttRettigheterOgPlikter er false`(){
-        hentGyldigEttersending().copy(harForståttRettigheterOgPlikter= false).valider()
+        Assertions.assertThrows(Throwblem::class.java) {
+            hentGyldigEttersending().copy(harForståttRettigheterOgPlikter = false).valider()
+        }
     }
 
-    @Test(expected = Throwblem::class)
+    @Test
     fun `Skal feile dersom beskrivelse er tom`(){
-        hentGyldigEttersending().copy(beskrivelse = "", søknadstype = Søknadstype.PLEIEPENGER_SYKT_BARN).valider()
+        Assertions.assertThrows(Throwblem::class.java) {
+            hentGyldigEttersending().copy(beskrivelse = "", søknadstype = Søknadstype.PLEIEPENGER_SYKT_BARN).valider()
+        }
     }
 
-    @Test(expected = Throwblem::class)
+    @Test
     fun `Skal feile dersom beskrivelse kun består av tomrom`(){
-        hentGyldigEttersending().copy(beskrivelse = "   ", søknadstype = Søknadstype.PLEIEPENGER_SYKT_BARN).valider()
+        Assertions.assertThrows(Throwblem::class.java) {
+            hentGyldigEttersending().copy(beskrivelse = "   ", søknadstype = Søknadstype.PLEIEPENGER_SYKT_BARN)
+                .valider()
+        }
     }
 
-    @Test(expected = Throwblem::class)
-    fun `Skal feile dersom søknaden har null vedlegg`(){
-        hentGyldigEttersending().copy(vedlegg = listOf()).valider()
+    @Test
+    fun `Skal feile dersom søknaden har null vedlegg`() {
+        Assertions.assertThrows(Throwblem::class.java) {
+            hentGyldigEttersending().copy(vedlegg = listOf()).valider()
+        }
     }
 }
