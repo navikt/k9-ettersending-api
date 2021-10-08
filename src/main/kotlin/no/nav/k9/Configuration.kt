@@ -1,7 +1,6 @@
 package no.nav.k9
 
 import io.ktor.config.*
-import io.ktor.util.*
 import no.nav.helse.dusseldorf.ktor.auth.EnforceEqualsOrContains
 import no.nav.helse.dusseldorf.ktor.auth.issuers
 import no.nav.helse.dusseldorf.ktor.auth.withAdditionalClaimRules
@@ -12,7 +11,6 @@ import no.nav.helse.dusseldorf.ktor.core.getRequiredString
 import no.nav.k9.kafka.KafkaConfig
 import java.net.URI
 
-@KtorExperimentalAPI
 data class Configuration(val config : ApplicationConfig) {
 
     private val loginServiceClaimRules = setOf(

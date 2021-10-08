@@ -83,7 +83,7 @@ internal fun List<Vedlegg>.validerVedlegg(vedleggUrler: List<URL>) {
 }
 
 private fun List<Vedlegg>.validerTotalStorresle() {
-    val totalSize = sumBy { it.content.size }
+    val totalSize = sumOf { it.content.size }
     if (totalSize > MAX_VEDLEGG_SIZE) {
         throw Throwblem(vedleggTooLargeProblemDetails)
     }
