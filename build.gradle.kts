@@ -4,14 +4,14 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val mainClass = "no.nav.k9.AppKt"
 val dusseldorfKtorVersion = "2.1.6.2-6ce5eaa"
 val ktorVersion = ext.get("ktorVersion").toString()
-val k9FormatVersion = "5.1.35"
+val k9FormatVersion = "5.4.25"
 val fuelVersion = "2.3.1"
 val kafkaEmbeddedEnvVersion = ext.get("kafkaEmbeddedEnvVersion").toString()
 val kafkaVersion = ext.get("kafkaVersion").toString() // Alligned med version fra kafka-embedded-env
 
 plugins {
-    kotlin("jvm") version "1.5.30"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    kotlin("jvm") version "1.5.31"
+    id("com.github.johnrengelman.shadow") version "7.1.0"
 }
 
 buildscript {
