@@ -10,6 +10,7 @@ import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.k9.general.CallId
 import no.nav.k9.general.auth.IdToken
 import no.nav.k9.general.oppslag.K9OppslagGateway
+import no.nav.k9.general.oppslag.throwable
 import no.nav.k9.k9SelvbetjeningOppslagKonfigurert
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -28,7 +29,7 @@ class SøkerGateway (
         private val attributter = Pair("a", listOf("aktør_id", "fornavn", "mellomnavn", "etternavn", "fødselsdato"))
     }
 
-    suspend fun hentSoker(
+    suspend fun hentSøker(
         idToken: IdToken,
         callId : CallId
     ) : SokerOppslagRespons {
@@ -56,9 +57,11 @@ class SøkerGateway (
             result.fold(
                 { success -> objectMapper.readValue<SokerOppslagRespons>(success)},
                 { error ->
-                    logger.error("Error response = '${error.response.body().asString("text/plain")}' fra '${request.url}'")
-                    logger.error(error.toString())
-                    throw IllegalStateException("Feil ved henting av søkers personinformasjon")
+                    throw error.throwable(
+                        request = request,
+                        logger = logger,
+                        errorMessage = "Feil ved henting av søkers personinformasjon"
+                    )
                 }
             )
         }

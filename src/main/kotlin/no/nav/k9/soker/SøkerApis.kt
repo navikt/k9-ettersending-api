@@ -6,6 +6,11 @@ import io.ktor.routing.*
 import no.nav.k9.SØKER_URL
 import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.getCallId
+import no.nav.k9.general.oppslag.TilgangNektetException
+import no.nav.k9.general.oppslag.respondTilgangNektetProblemDetail
+import org.slf4j.LoggerFactory
+
+private val logger = LoggerFactory.getLogger("no.nav.k9.soker.SøkerApis")
 
 fun Route.søkerApis(
     søkerService: SøkerService,
@@ -13,12 +18,19 @@ fun Route.søkerApis(
 ) {
 
     get(SØKER_URL) {
-        call.respond(
-            søkerService.getSoker(
-                idToken = idTokenProvider.getIdToken(call),
-                callId = call.getCallId()
+        try {
+            call.respond(
+                søkerService.getSoker(
+                    idToken = idTokenProvider.getIdToken(call),
+                    callId = call.getCallId()
+                )
             )
-        )
+        } catch (e: Exception){
+            when(e){
+                is TilgangNektetException -> call.respondTilgangNektetProblemDetail(logger, e)
+                else -> throw e
+            }
+        }
     }
 }
 
