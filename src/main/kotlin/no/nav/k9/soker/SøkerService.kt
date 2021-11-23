@@ -12,7 +12,7 @@ class SøkerService (
         callId: CallId
     ): Søker {
         val ident: String = JWT.decode(idToken.value).subject ?: throw IllegalStateException("Token mangler 'sub' claim.")
-        return søkerGateway.hentSoker(idToken, callId).tilSøker(ident)
+        return søkerGateway.hentSøker(idToken, callId).tilSøker(ident)
     }
 
     private fun  SøkerGateway.SokerOppslagRespons.tilSøker(fodselsnummer: String) = Søker(

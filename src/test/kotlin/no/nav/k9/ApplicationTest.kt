@@ -167,12 +167,40 @@ class ApplicationTest {
 
     @Test
     fun `Hente søker`() {
+        wireMockServer.stubK9OppslagSoker(
+            statusCode = HttpStatusCode.fromValue(451),
+            responseBody =
+            //language=json
+            """
+            {
+                "detail": "Policy decision: DENY - Reason: (NAV-bruker er i live AND NAV-bruker er ikke myndig)",
+                "instance": "/meg",
+                "type": "/problem-details/tilgangskontroll-feil",
+                "title": "tilgangskontroll-feil",
+                "status": 451
+            }
+            """.trimIndent()
+        )
+
         requestAndAssert(
             httpMethod = HttpMethod.Get,
             path = SØKER_URL,
-            expectedCode = HttpStatusCode.OK,
-            expectedResponse = expectedGetSokerJson(gyldigFodselsnummerA)
+            expectedCode = HttpStatusCode.fromValue(451),
+            expectedResponse =
+            //language=json
+            """
+            {
+                "type": "/problem-details/tilgangskontroll-feil",
+                "title": "tilgangskontroll-feil",
+                "status": 451,
+                "instance": "/soker",
+                "detail": "Tilgang nektet."
+            }
+            """.trimIndent(),
+            cookie = getAuthCookie(ikkeMyndigFnr)
         )
+
+        wireMockServer.stubK9OppslagSoker() // reset til default mapping
     }
 
     @Test
