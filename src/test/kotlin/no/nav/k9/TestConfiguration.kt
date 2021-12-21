@@ -43,6 +43,9 @@ object TestConfiguration {
             map["nav.auth.issuers.1.alias"] = "login-service-v2"
             map["nav.auth.issuers.1.discovery_endpoint"] = wireMockServer.getLoginServiceV1WellKnownUrl()
             map["nav.auth.issuers.1.audience"] = LoginService.V1_0.getAudience()
+            map["nav.auth.issuers.2.alias"] = "id-porten"
+            map["nav.auth.issuers.2.discovery_endpoint"] = wireMockServer.getLoginServiceV1WellKnownUrl()
+            map["nav.auth.issuers.2.audience"] = LoginService.V1_0.getAudience()
 
             // scopes
             map["nav.auth.scopes.k9-mellomlagring-client-id"] = "k9-mellomlagring-client-id/.default"

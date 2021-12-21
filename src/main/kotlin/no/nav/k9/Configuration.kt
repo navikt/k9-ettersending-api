@@ -13,13 +13,14 @@ import java.net.URI
 
 data class Configuration(val config : ApplicationConfig) {
 
-    private val loginServiceClaimRules = setOf(
+    private val serviceClaims = setOf(
         EnforceEqualsOrContains("acr", "Level4")
     )
 
     internal fun issuers() = config.issuers().withAdditionalClaimRules(mapOf(
-        "login-service-v1" to loginServiceClaimRules,
-        "login-service-v2" to loginServiceClaimRules
+        "login-service-v1" to serviceClaims,
+        "login-service-v2" to serviceClaims,
+        "id-porten" to serviceClaims
     ))
 
     internal fun getCookieName(): String {
