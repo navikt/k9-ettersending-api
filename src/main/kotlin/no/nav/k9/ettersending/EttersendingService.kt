@@ -1,7 +1,7 @@
 package no.nav.k9.ettersending
 
+import no.nav.helse.dusseldorf.ktor.auth.IdToken
 import no.nav.k9.general.CallId
-import no.nav.k9.general.auth.IdToken
 import no.nav.k9.general.formaterStatuslogging
 import no.nav.k9.k9format.tilK9Format
 import no.nav.k9.kafka.KafkaProducer

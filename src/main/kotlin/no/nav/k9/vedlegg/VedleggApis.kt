@@ -7,11 +7,11 @@ import io.ktor.http.content.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import no.nav.helse.dusseldorf.ktor.auth.IdTokenProvider
 import no.nav.helse.dusseldorf.ktor.core.DefaultProblemDetails
 import no.nav.helse.dusseldorf.ktor.core.respondProblemDetails
 import no.nav.k9.VEDLEGGID_URL
 import no.nav.k9.VEDLEGG_URL
-import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.getCallId
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -42,7 +42,7 @@ fun Route.vedleggApis(
                 val multipart = call.receiveMultipart()
                 var vedlegg: Vedlegg? = null
 
-                var eier = idTokenProvider.getIdToken(call).getSubject()
+                var eier = idTokenProvider.getIdToken(call).getNorskIdentifikasjonsnummer()
                 if (eier == null) {
                     call.respondProblemDetails(fantIkkeSubjectPaaToken)
                 } else {
@@ -73,7 +73,7 @@ fun Route.vedleggApis(
             val vedleggId = VedleggId(call.parameters["vedleggId"]!!)
             logger.info("Henter vedlegg")
             logger.info("$vedleggId")
-            var eier = idTokenProvider.getIdToken(call).getSubject()
+            var eier = idTokenProvider.getIdToken(call).getNorskIdentifikasjonsnummer()
             if (eier == null) call.respond(HttpStatusCode.Forbidden) else {
                 val vedlegg = vedleggService.hentVedlegg(
                     vedleggId = vedleggId,
@@ -98,7 +98,7 @@ fun Route.vedleggApis(
             val vedleggId = VedleggId(call.parameters["vedleggId"]!!)
             logger.info("Sletter vedlegg")
             logger.info("$vedleggId")
-            var eier = idTokenProvider.getIdToken(call).getSubject()
+            var eier = idTokenProvider.getIdToken(call).getNorskIdentifikasjonsnummer()
             if (eier == null) call.respond(HttpStatusCode.Forbidden) else {
                 val resultat = vedleggService.slettVedlegg(
                     vedleggId = vedleggId,

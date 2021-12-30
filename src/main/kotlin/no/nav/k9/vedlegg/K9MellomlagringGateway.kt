@@ -12,6 +12,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import no.nav.helse.dusseldorf.ktor.auth.IdToken
 import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.Retry.Companion.retry
 import no.nav.helse.dusseldorf.ktor.health.HealthCheck
@@ -23,7 +24,6 @@ import no.nav.helse.dusseldorf.ktor.metrics.Operation.Companion.monitored
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.general.CallId
-import no.nav.k9.general.auth.IdToken
 import no.nav.k9.k9MellomlagringKonfigurert
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

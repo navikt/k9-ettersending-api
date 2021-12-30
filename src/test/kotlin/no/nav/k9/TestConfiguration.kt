@@ -3,8 +3,10 @@ package no.nav.k9
 import com.github.tomakehurst.wiremock.WireMockServer
 import no.nav.common.KafkaEnvironment
 import no.nav.helse.dusseldorf.testsupport.jws.ClientCredentials
+import no.nav.helse.dusseldorf.testsupport.jws.IDPorten
 import no.nav.helse.dusseldorf.testsupport.jws.LoginService
 import no.nav.helse.dusseldorf.testsupport.wiremock.getAzureV2WellKnownUrl
+import no.nav.helse.dusseldorf.testsupport.wiremock.getIdPortenWellKnownUrl
 import no.nav.helse.dusseldorf.testsupport.wiremock.getLoginServiceV1WellKnownUrl
 import no.nav.k9.wiremock.getK9MellomlagringUrl
 import no.nav.k9.wiremock.getK9OppslagUrl
@@ -44,8 +46,8 @@ object TestConfiguration {
             map["nav.auth.issuers.1.discovery_endpoint"] = wireMockServer.getLoginServiceV1WellKnownUrl()
             map["nav.auth.issuers.1.audience"] = LoginService.V1_0.getAudience()
             map["nav.auth.issuers.2.alias"] = "id-porten"
-            map["nav.auth.issuers.2.discovery_endpoint"] = wireMockServer.getLoginServiceV1WellKnownUrl()
-            map["nav.auth.issuers.2.audience"] = LoginService.V1_0.getAudience()
+            map["nav.auth.issuers.2.discovery_endpoint"] = wireMockServer.getIdPortenWellKnownUrl()
+            map["nav.auth.issuers.2.audience"] = IDPorten.getAudience()
 
             // scopes
             map["nav.auth.scopes.k9-mellomlagring-client-id"] = "k9-mellomlagring-client-id/.default"

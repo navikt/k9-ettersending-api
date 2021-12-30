@@ -8,6 +8,7 @@ import io.ktor.server.testing.*
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import no.nav.helse.getAuthCookie
+import no.nav.helse.getIdportenAuthCookie
 import no.nav.k9.EttersendingUtils.gyldigEttersendingSomJson
 import no.nav.k9.EttersendingUtils.hentGyldigEttersending
 import no.nav.k9.ettersending.Søknadstype
@@ -37,6 +38,7 @@ class ApplicationTest {
             .withAzureSupport()
             .withNaisStsSupport()
             .withLoginServiceSupport()
+            .withIDPortenSupport()
             .k9EttersendingApiConfig()
             .build()
             .stubOppslagHealth()
@@ -164,6 +166,17 @@ class ApplicationTest {
                 "myndig": $myndig
             }
         """.trimIndent()
+
+    @Test
+    fun `Hente søker med idporten token`() {
+        requestAndAssert(
+            httpMethod = HttpMethod.Get,
+            path = SØKER_URL,
+            expectedCode = HttpStatusCode.OK,
+            expectedResponse = expectedGetSokerJson(gyldigFodselsnummerA),
+            cookie = getIdportenAuthCookie(gyldigFodselsnummerA)
+        )
+    }
 
     @Test
     fun `Hente søker`() {
