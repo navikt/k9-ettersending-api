@@ -18,8 +18,8 @@ internal class AccessTokenClientResolver(
         private const val TOKEN_X_ALIAS = "tokenx"
     }
 
-    internal val tokenxClient get() = createSignedJwtAccessTokenClient(resolveClient(TOKEN_X_ALIAS))
-    internal val azureV2AccessTokenClient get() = createSignedJwtAccessTokenClient(resolveClient(AZURE_V2_ALIAS))
+    internal val tokenxClient = createSignedJwtAccessTokenClient(resolveClient(TOKEN_X_ALIAS))
+    internal val azureV2AccessTokenClient = createSignedJwtAccessTokenClient(resolveClient(AZURE_V2_ALIAS))
 
     private fun resolveClient(alias: String) =
         clients.getOrElse(alias) {
