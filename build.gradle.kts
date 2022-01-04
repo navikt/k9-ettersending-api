@@ -11,7 +11,7 @@ val kafkaVersion = ext.get("kafkaVersion").toString() // Alligned med version fr
 
 plugins {
     kotlin("jvm") version "1.6.10"
-    id("com.github.johnrengelman.shadow") version "7.1.1"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 buildscript {
@@ -50,7 +50,7 @@ dependencies {
     }
     testImplementation ("org.skyscreamer:jsonassert:1.5.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
-    testImplementation("io.mockk:mockk:1.12.1")
+    testImplementation("io.mockk:mockk:1.12.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
 
@@ -99,7 +99,7 @@ tasks.withType<ShadowJar> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "7.2"
+    gradleVersion = "7.3.3"
 }
 
 tasks.withType<Test> {

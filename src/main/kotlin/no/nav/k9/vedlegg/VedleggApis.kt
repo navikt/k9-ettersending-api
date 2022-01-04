@@ -27,7 +27,6 @@ private val vedleggNotAttachedProblemDetails = DefaultProblemDetails(title = "at
 private val vedleggTooLargeProblemDetails = DefaultProblemDetails(title = "attachment-too-large", status = 413, detail = "vedlegget var over maks tillatt størrelse på 8MB.")
 private val vedleggContentTypeNotSupportedProblemDetails = DefaultProblemDetails(title = "attachment-content-type-not-supported", status = 400, detail = "Vedleggets type må være en av $supportedContentTypes")
 private val feilVedSlettingAvVedlegg = DefaultProblemDetails(title = "feil-ved-sletting", status = 500, detail = "Feil ved sletting av vedlegg")
-private val fantIkkeSubjectPaaToken = DefaultProblemDetails(title = "fant-ikke-subject", status = 413, detail = "Fant ikke subject på idToken")
 
 fun Route.vedleggApis(
     vedleggService: VedleggService,
@@ -39,15 +38,8 @@ fun Route.vedleggApis(
             if (!call.request.isFormMultipart()) {
                 call.respondProblemDetails(hasToBeMultupartTypeProblemDetails)
             } else {
-                val multipart = call.receiveMultipart()
-                var vedlegg: Vedlegg? = null
-
                 var eier = idTokenProvider.getIdToken(call).getNorskIdentifikasjonsnummer()
-                if (eier == null) {
-                    call.respondProblemDetails(fantIkkeSubjectPaaToken)
-                } else {
-                    vedlegg = multipart.getVedlegg(DokumentEier(eier))
-                }
+                var vedlegg: Vedlegg? = call.receiveMultipart().getVedlegg(DokumentEier(eier))
 
                 if (vedlegg == null) {
                     call.respondProblemDetails(vedleggNotAttachedProblemDetails)
