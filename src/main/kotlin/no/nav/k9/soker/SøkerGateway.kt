@@ -22,7 +22,7 @@ import java.time.LocalDate
 class SøkerGateway(
     baseUrl: URI,
     private val accessTokenClient: CachedAccessTokenClient,
-    private val k9SelvbetjeningOppslagTokenxAudience: String,
+    private val k9SelvbetjeningOppslagTokenxAudience: Set<String>,
 ) : K9OppslagGateway(baseUrl) {
 
     private companion object {
@@ -43,7 +43,7 @@ class SøkerGateway(
                 attributter
             )
         ).toString()
-        val token = resolveToken(accessTokenClient, idToken, setOf(k9SelvbetjeningOppslagTokenxAudience))
+        val token = resolveToken(accessTokenClient, idToken, k9SelvbetjeningOppslagTokenxAudience)
         val httpRequest = generateHttpRequest(token, sokerUrl, callId)
 
         val oppslagRespons = Retry.retry(
