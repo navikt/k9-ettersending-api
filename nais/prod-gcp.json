@@ -24,7 +24,8 @@
     "K9_SELVBETJENING_OPPSLAG_TOKENX_AUDIENCE": "prod-fss:dusseldorf:k9-selvbetjening-oppslag",
     "K9_MELLOMLAGRING_SERVICE_DISCOVERY": "http://k9-mellomlagring",
     "K9_MELLOMLAGRING_INGRESS": "https://k9-mellomlagring.intern.nav.no/v1/dokument",
-    "K9_MELLOMLAGRING_CLIENT_ID": "19aaf0b2-f40a-4a64-bf7f-fd2dd62f0552/.default"
+    "K9_MELLOMLAGRING_CLIENT_ID": "19aaf0b2-f40a-4a64-bf7f-fd2dd62f0552/.default",
+    "K9_MELLOMLAGRING_TOKENX_AUDIENCE": "prod-gcp:dusseldorf:k9-mellomlagring"
   },
   "slack-channel": "sif-alerts",
   "slack-notify-type": "<!channel> | k9-ettersending-api | ",

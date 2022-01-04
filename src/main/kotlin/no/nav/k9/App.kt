@@ -103,7 +103,9 @@ fun Application.k9EttersendingApi() {
         val k9MellomlagringGateway = K9MellomlagringGateway(
             baseUrl = configuration.getK9MellomlagringUrl(),
             accessTokenClient = accessTokenClientResolver.azureV2AccessTokenClient,
-            k9MellomlagringScope = configuration.getK9MellomlagringScopes()
+            exchangeTokenClient = tokenxClient,
+            k9MellomlagringScope = configuration.getK9MellomlagringScopes(),
+            k9MellomlagringTokenxAudience = configuration.getK9MellomlagringTokenxAudience()
         )
 
         val vedleggService = VedleggService(k9MellomlagringGateway = k9MellomlagringGateway)
