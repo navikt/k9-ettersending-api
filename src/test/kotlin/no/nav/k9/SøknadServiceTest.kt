@@ -6,12 +6,12 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import kotlinx.coroutines.runBlocking
+import no.nav.helse.dusseldorf.ktor.auth.IdToken
 import no.nav.helse.dusseldorf.testsupport.jws.Azure
 import no.nav.k9.EttersendingUtils.hentGyldigEttersending
 import no.nav.k9.ettersending.EttersendingService
 import no.nav.k9.ettersending.MeldingRegistreringFeiletException
 import no.nav.k9.general.CallId
-import no.nav.k9.general.auth.IdToken
 import no.nav.k9.kafka.KafkaProducer
 import no.nav.k9.kafka.Metadata
 import no.nav.k9.soker.Søker

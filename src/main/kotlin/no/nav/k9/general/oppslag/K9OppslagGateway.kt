@@ -3,8 +3,8 @@ package no.nav.k9.general.oppslag
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.httpGet
 import io.ktor.http.*
+import no.nav.helse.dusseldorf.ktor.auth.IdToken
 import no.nav.k9.general.CallId
-import no.nav.k9.general.auth.IdToken
 import java.net.URI
 
 abstract class K9OppslagGateway(

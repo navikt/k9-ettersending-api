@@ -13,6 +13,7 @@ import io.ktor.jackson.*
 import io.ktor.metrics.micrometer.*
 import io.ktor.routing.*
 import io.prometheus.client.hotspot.DefaultExports
+import no.nav.helse.dusseldorf.ktor.auth.IdTokenProvider
 import no.nav.helse.dusseldorf.ktor.auth.allIssuers
 import no.nav.helse.dusseldorf.ktor.auth.clients
 import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
@@ -29,7 +30,6 @@ import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
 import no.nav.k9.ettersending.EttersendingService
 import no.nav.k9.ettersending.ettersendingApis
-import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.auth.IdTokenStatusPages
 import no.nav.k9.general.systemauth.AccessTokenClientResolver
 import no.nav.k9.kafka.KafkaProducer

@@ -1,10 +1,12 @@
 package no.nav.k9.general.auth
 
-import io.ktor.application.call
-import io.ktor.features.StatusPages
-import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
+import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.response.*
 import no.nav.helse.dusseldorf.ktor.auth.ClaimEnforcementFailed
+import no.nav.helse.dusseldorf.ktor.auth.CookieNotSetException
+import no.nav.helse.dusseldorf.ktor.auth.IdTokenInvalidFormatException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
