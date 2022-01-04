@@ -28,6 +28,7 @@ import no.nav.helse.dusseldorf.ktor.jackson.JacksonStatusPages
 import no.nav.helse.dusseldorf.ktor.jackson.dusseldorfConfigured
 import no.nav.helse.dusseldorf.ktor.metrics.MetricsRoute
 import no.nav.helse.dusseldorf.ktor.metrics.init
+import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.ettersending.EttersendingService
 import no.nav.k9.ettersending.ettersendingApis
 import no.nav.k9.general.auth.IdTokenStatusPages
@@ -56,6 +57,7 @@ fun Application.k9EttersendingApi() {
 
     val configuration = Configuration(environment.config)
     val accessTokenClientResolver = AccessTokenClientResolver(environment.config.clients())
+    val tokenxClient = CachedAccessTokenClient(accessTokenClientResolver.tokenxClient)
 
     install(ContentNegotiation) {
         jackson {
@@ -100,14 +102,16 @@ fun Application.k9EttersendingApi() {
 
         val k9MellomlagringGateway = K9MellomlagringGateway(
             baseUrl = configuration.getK9MellomlagringUrl(),
-            accessTokenClient = accessTokenClientResolver.accessTokenClient(),
+            accessTokenClient = accessTokenClientResolver.azureV2AccessTokenClient,
             k9MellomlagringScope = configuration.getK9MellomlagringScopes()
         )
 
         val vedleggService = VedleggService(k9MellomlagringGateway = k9MellomlagringGateway)
 
         val sokerGateway = SøkerGateway(
-            baseUrl = configuration.getK9OppslagUrl()
+            baseUrl = configuration.getK9OppslagUrl(),
+            accessTokenClient = tokenxClient,
+            k9SelvbetjeningOppslagTokenxAudience = configuration.getK9SelvbetjeningOppslagTokenxAudience()
         )
 
         val søkerService = SøkerService(
