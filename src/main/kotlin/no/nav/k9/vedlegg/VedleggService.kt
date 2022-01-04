@@ -4,8 +4,8 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import no.nav.helse.dusseldorf.ktor.auth.IdToken
 import no.nav.k9.general.CallId
-import no.nav.k9.general.auth.IdToken
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URL

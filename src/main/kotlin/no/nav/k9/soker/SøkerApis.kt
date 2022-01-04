@@ -3,8 +3,8 @@ package no.nav.k9.soker
 import io.ktor.application.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import no.nav.helse.dusseldorf.ktor.auth.IdTokenProvider
 import no.nav.k9.SØKER_URL
-import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.getCallId
 import no.nav.k9.general.oppslag.TilgangNektetException
 import no.nav.k9.general.oppslag.respondTilgangNektetProblemDetail

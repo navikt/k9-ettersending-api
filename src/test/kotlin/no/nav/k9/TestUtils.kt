@@ -1,14 +1,14 @@
 package no.nav.helse
 
-import com.auth0.jwt.JWT
 import com.github.tomakehurst.wiremock.http.Request
-import io.ktor.http.HttpHeaders
+import io.ktor.http.*
+import no.nav.helse.dusseldorf.ktor.auth.IdToken
 
 class TestUtils {
     companion object {
         fun getIdentFromIdToken(request: Request?): String {
-            val idToken: String = request!!.getHeader(HttpHeaders.Authorization).substringAfter("Bearer ")
-            return JWT.decode(idToken).subject ?: throw IllegalStateException("Token mangler 'sub' claim.")
+            val idToken = IdToken(request!!.getHeader(HttpHeaders.Authorization).substringAfter("Bearer "))
+            return idToken.getNorskIdentifikasjonsnummer()
         }
     }
 }
