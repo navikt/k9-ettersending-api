@@ -10,31 +10,34 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 internal class AccessTokenClientResolver(
-    clients: Map<String, Client>
+    private val clients: Map<String, Client>
 ) {
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(AccessTokenClientResolver::class.java)
         private const val AZURE_V2_ALIAS = "azure-v2"
+        private const val TOKEN_X_ALIAS = "tokenx"
     }
 
-    private val azureV2Client = clients.getOrElse(AZURE_V2_ALIAS) {
-        throw IllegalStateException("Client[$AZURE_V2_ALIAS] må være satt opp.")
-    } as PrivateKeyClient
+    internal val tokenxClient = createSignedJwtAccessTokenClient(resolveClient(TOKEN_X_ALIAS))
+    internal val azureV2AccessTokenClient = createSignedJwtAccessTokenClient(resolveClient(AZURE_V2_ALIAS))
 
-    private val keyId = try {
-        val jwk = JWK.parse(azureV2Client.privateKeyJwk)
-        requireNotNull(jwk.keyID) { "Azure JWK inneholder ikke keyID." }
+    private fun resolveClient(alias: String) =
+        clients.getOrElse(alias) {
+            throw IllegalStateException("Client[${alias}] må være satt opp.")
+        } as PrivateKeyClient
+
+    private fun resolveKeyId(client: PrivateKeyClient) = try {
+        val jwk = JWK.parse(client.privateKeyJwk)
+        requireNotNull(jwk.keyID) { "Private JWK inneholder ikke keyID." }
         jwk.keyID
     } catch (_: Throwable) {
-        throw IllegalArgumentException("Azure JWK på feil format.")
+        throw IllegalArgumentException("Private JWK på feil format.")
     }
 
-    private val azureV2AccessTokenClient = SignedJwtAccessTokenClient(
-        clientId = azureV2Client.clientId(),
-        tokenEndpoint = azureV2Client.tokenEndpoint(),
-        privateKeyProvider = FromJwk(azureV2Client.privateKeyJwk),
-        keyIdProvider = DirectKeyId(keyId)
+    private fun createSignedJwtAccessTokenClient(client: PrivateKeyClient) = SignedJwtAccessTokenClient(
+        clientId = client.clientId(),
+        tokenEndpoint = client.tokenEndpoint(),
+        privateKeyProvider = FromJwk(client.privateKeyJwk),
+        keyIdProvider = DirectKeyId(resolveKeyId(client))
     )
-
-    internal fun accessTokenClient() = azureV2AccessTokenClient
 }

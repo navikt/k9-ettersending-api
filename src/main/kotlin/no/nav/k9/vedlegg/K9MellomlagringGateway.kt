@@ -24,6 +24,7 @@ import no.nav.helse.dusseldorf.ktor.metrics.Operation.Companion.monitored
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.general.CallId
+import no.nav.k9.general.auth.TokenResolver
 import no.nav.k9.k9MellomlagringKonfigurert
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -34,7 +35,9 @@ import java.time.Duration
 class K9MellomlagringGateway(
     private val accessTokenClient: AccessTokenClient,
     private val k9MellomlagringScope: Set<String>,
-    private val baseUrl: URI
+    private val baseUrl: URI,
+    private val exchangeTokenClient: CachedAccessTokenClient,
+    private val k9MellomlagringTokenxAudience: Set<String>
 ) : HealthCheck {
 
     private companion object {
@@ -83,13 +86,14 @@ class K9MellomlagringGateway(
                 resultResolver = { 201 == it.second.statusCode }
             ) {
                 val contentStream = { ByteArrayInputStream(body) }
+                val token = TokenResolver.resolveToken(exchangeTokenClient, idToken, k9MellomlagringTokenxAudience)
 
                 komplettUrl
                     .toString()
                     .httpPost()
                     .body(contentStream)
                     .header(
-                        HttpHeaders.Authorization to "Bearer ${idToken.value}",
+                        HttpHeaders.Authorization to "Bearer ${token.value}",
                         HttpHeaders.ContentType to "application/json",
                         HttpHeaders.Accept to "application/json",
                         HttpHeaders.XCorrelationId to callId.value
@@ -123,12 +127,14 @@ class K9MellomlagringGateway(
             pathParts = listOf(vedleggId.value)
         )
 
+        val token = TokenResolver.resolveToken(exchangeTokenClient, idToken, k9MellomlagringTokenxAudience)
+
         val httpRequest = urlMedId
             .toString()
             .httpDelete()
             .body(body)
             .header(
-                HttpHeaders.Authorization to "Bearer ${idToken.value}",
+                HttpHeaders.Authorization to "Bearer ${token.value}",
                 HttpHeaders.XCorrelationId to callId.value,
                 HttpHeaders.ContentType to "application/json"
             )
@@ -334,12 +340,14 @@ class K9MellomlagringGateway(
             pathParts = listOf(vedleggId.value)
         )
 
+        val token = TokenResolver.resolveToken(exchangeTokenClient, idToken, k9MellomlagringTokenxAudience)
+
         val httpRequest = urlMedId
             .toString()
             .httpPost()
             .body(body)
             .header(
-                HttpHeaders.Authorization to "Bearer ${idToken.value}",
+                HttpHeaders.Authorization to "Bearer ${token.value}",
                 HttpHeaders.XCorrelationId to callId.value,
                 HttpHeaders.ContentType to "application/json",
                 HttpHeaders.Accept to "application/json"

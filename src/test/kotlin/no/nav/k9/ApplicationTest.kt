@@ -8,6 +8,7 @@ import io.ktor.server.testing.*
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import no.nav.helse.getAuthCookie
+import no.nav.helse.getIdportenAuthCookie
 import no.nav.k9.EttersendingUtils.gyldigEttersendingSomJson
 import no.nav.k9.EttersendingUtils.hentGyldigEttersending
 import no.nav.k9.ettersending.Søknadstype
@@ -37,6 +38,8 @@ class ApplicationTest {
             .withAzureSupport()
             .withNaisStsSupport()
             .withLoginServiceSupport()
+            .withIDPortenSupport()
+            .withTokendingsSupport()
             .k9EttersendingApiConfig()
             .build()
             .stubOppslagHealth()
@@ -49,7 +52,7 @@ class ApplicationTest {
         private val gyldigFodselsnummerA = "02119970078"
         private val cookie = getAuthCookie(gyldigFodselsnummerA)
         // Se https://github.com/navikt/dusseldorf-ktor#f%C3%B8dselsnummer
-        private val ikkeMyndigDato = "2050-12-12"
+        private val myndigDato = "1999-11-02"
         private const val ikkeMyndigFnr = "12125012345"
 
         fun getConfig(): ApplicationConfig {
@@ -166,7 +169,33 @@ class ApplicationTest {
         """.trimIndent()
 
     @Test
-    fun `Hente søker`() {
+    fun `Hente søker med loginservice token`() {
+        requestAndAssert(
+            httpMethod = HttpMethod.Get,
+            path = SØKER_URL,
+            expectedCode = HttpStatusCode.OK,
+            expectedResponse = expectedGetSokerJson(
+                fodselsnummer = gyldigFodselsnummerA,
+                fodselsdato = myndigDato,
+                myndig = true
+            ),
+            cookie = getAuthCookie(gyldigFodselsnummerA)
+        )
+    }
+
+    @Test
+    fun `Hente søker med idporten token`() {
+        requestAndAssert(
+            httpMethod = HttpMethod.Get,
+            path = SØKER_URL,
+            expectedCode = HttpStatusCode.OK,
+            expectedResponse = expectedGetSokerJson(gyldigFodselsnummerA),
+            cookie = getIdportenAuthCookie(gyldigFodselsnummerA)
+        )
+    }
+
+    @Test
+    fun `Hente søker som ikke er myndig`() {
         wireMockServer.stubK9OppslagSoker(
             statusCode = HttpStatusCode.fromValue(451),
             responseBody =
@@ -211,21 +240,6 @@ class ApplicationTest {
             cookie = getAuthCookie(fnr = gyldigFodselsnummerA, level = 3),
             expectedCode = HttpStatusCode.Forbidden,
             expectedResponse = null
-        )
-    }
-
-    @Test
-    fun `Hente søker som ikke er myndig`() {
-        requestAndAssert(
-            httpMethod = HttpMethod.Get,
-            path = SØKER_URL,
-            expectedCode = HttpStatusCode.OK,
-            expectedResponse = expectedGetSokerJson(
-                fodselsnummer = ikkeMyndigFnr,
-                fodselsdato = ikkeMyndigDato,
-                myndig = false
-            ),
-            cookie = getAuthCookie(ikkeMyndigFnr)
         )
     }
 

@@ -8,7 +8,9 @@ import no.nav.helse.dusseldorf.ktor.auth.IdToken
 import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
+import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.general.CallId
+import no.nav.k9.general.auth.TokenResolver
 import no.nav.k9.general.oppslag.K9OppslagGateway
 import no.nav.k9.general.oppslag.throwable
 import no.nav.k9.k9SelvbetjeningOppslagKonfigurert
@@ -18,8 +20,10 @@ import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
 
-class SøkerGateway (
+class SøkerGateway(
     baseUrl: URI,
+    private val accessTokenClient: CachedAccessTokenClient,
+    private val k9SelvbetjeningOppslagTokenxAudience: Set<String>,
 ) : K9OppslagGateway(baseUrl) {
 
     private companion object {
@@ -31,8 +35,8 @@ class SøkerGateway (
 
     suspend fun hentSøker(
         idToken: IdToken,
-        callId : CallId
-    ) : SokerOppslagRespons {
+        callId: CallId
+    ): SokerOppslagRespons {
         val sokerUrl = Url.buildURL(
             baseUrl = baseUrl,
             pathParts = listOf("meg"),
@@ -40,7 +44,8 @@ class SøkerGateway (
                 attributter
             )
         ).toString()
-        val httpRequest = generateHttpRequest(idToken, sokerUrl, callId)
+        val token = TokenResolver.resolveToken(accessTokenClient, idToken, k9SelvbetjeningOppslagTokenxAudience)
+        val httpRequest = generateHttpRequest(token, sokerUrl, callId)
 
         val oppslagRespons = Retry.retry(
             operation = HENTE_SOKER_OPERATION,
@@ -55,7 +60,7 @@ class SøkerGateway (
             ) { httpRequest.awaitStringResponseResult() }
 
             result.fold(
-                { success -> objectMapper.readValue<SokerOppslagRespons>(success)},
+                { success -> objectMapper.readValue<SokerOppslagRespons>(success) },
                 { error ->
                     throw error.throwable(
                         request = request,
@@ -67,6 +72,7 @@ class SøkerGateway (
         }
         return oppslagRespons
     }
+
     data class SokerOppslagRespons(
         val aktør_id: String,
         val fornavn: String,
