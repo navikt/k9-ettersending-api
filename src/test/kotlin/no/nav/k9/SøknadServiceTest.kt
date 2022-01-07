@@ -22,7 +22,6 @@ import no.nav.k9.vedlegg.VedleggService
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
-import java.net.URI
 import java.time.LocalDate
 import kotlin.test.Test
 
@@ -44,7 +43,6 @@ internal class SøknadServiceTest{
         ettersendingService = EttersendingService(
             søkerService = søkerService,
             kafkaProducer = kafkaProducer,
-            k9MellomLagringIngress = URI("http://localhost:8080/v1/dokument"),
             vedleggService = vedleggService
         )
         assertNotNull(kafkaProducer)

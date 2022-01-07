@@ -147,7 +147,6 @@ fun Application.k9EttersendingApi() {
                 ettersendingService = EttersendingService(
                     søkerService = søkerService,
                     vedleggService = vedleggService,
-                    k9MellomLagringIngress = configuration.getK9MellomlagringIngress(),
                     kafkaProducer = kafkaProducer
                 )
             )

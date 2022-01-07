@@ -1,10 +1,8 @@
 package no.nav.k9.ettersending
 
-import io.ktor.http.*
-import no.nav.helse.dusseldorf.ktor.client.buildURL
 import no.nav.k9.ettersendelse.Ettersendelse
 import no.nav.k9.soker.Søker
-import java.net.URI
+import no.nav.k9.vedlegg.vedleggId
 import java.net.URL
 import java.time.ZonedDateTime
 import java.util.*
@@ -21,7 +19,6 @@ data class Ettersending(
     fun tilKomplettEttersending(
         k9Format: Ettersendelse,
         søker: Søker,
-        k9MellomlagringIngress: URI,
         mottatt: ZonedDateTime,
         titler: List<String>
     ) =
@@ -29,7 +26,7 @@ data class Ettersending(
             søker = søker,
             språk = språk,
             mottatt = mottatt,
-            vedleggUrls = vedlegg.tilK9MellomLagringUrl(k9MellomlagringIngress),
+            vedleggId = vedlegg.map { it.vedleggId() },
             søknadId = søknadId,
             harForståttRettigheterOgPlikter = harForståttRettigheterOgPlikter,
             harBekreftetOpplysninger = harBekreftetOpplysninger,
@@ -40,13 +37,6 @@ data class Ettersending(
         )
 }
 
-fun List<URL>.tilK9MellomLagringUrl(baseUrl: URI): List<URL> = map {
-    val idFraUrl = it.path.substringAfterLast("/")
-    Url.buildURL(
-        baseUrl = baseUrl,
-        pathParts = listOf(idFraUrl)
-    ).toURL()
-}
 
 enum class Søknadstype {
     PLEIEPENGER_SYKT_BARN,
