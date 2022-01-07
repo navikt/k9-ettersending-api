@@ -19,7 +19,7 @@ class VedleggService(
         vedlegg: Vedlegg,
         idToken: IdToken,
         callId: CallId
-    ): VedleggId {
+    ): String {
 
         return k9MellomlagringGateway.lagreVedlegg(
             vedlegg = vedlegg,
@@ -30,7 +30,7 @@ class VedleggService(
     }
 
     suspend fun hentVedlegg(
-        vedleggId: VedleggId,
+        vedleggId: String,
         idToken: IdToken,
         callId: CallId,
         eier: DokumentEier
@@ -69,7 +69,7 @@ class VedleggService(
     }
 
     suspend fun slettVedlegg(
-        vedleggId: VedleggId,
+        vedleggId: String,
         idToken: IdToken,
         callId: CallId,
         eier: DokumentEier
@@ -111,4 +111,4 @@ class VedleggService(
     }
 }
 
-fun URL.vedleggId(): VedleggId = VedleggId(this.toString().substringAfterLast("/"))
+fun URL.vedleggId(): String = this.toString().substringAfterLast("/")

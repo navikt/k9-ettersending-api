@@ -21,22 +21,20 @@ data class Ettersending(
         søker: Søker,
         mottatt: ZonedDateTime,
         titler: List<String>
-    ) =
-        KomplettEttersending(
-            søker = søker,
-            språk = språk,
-            mottatt = mottatt,
-            vedleggId = vedlegg.map { it.vedleggId() },
-            søknadId = søknadId,
-            harForståttRettigheterOgPlikter = harForståttRettigheterOgPlikter,
-            harBekreftetOpplysninger = harBekreftetOpplysninger,
-            beskrivelse = beskrivelse,
-            søknadstype = søknadstype,
-            titler = titler,
-            k9Format = k9Format
-        )
+    ) = KomplettEttersending(
+        søker = søker,
+        språk = språk,
+        mottatt = mottatt,
+        vedleggId = vedlegg.map { it.vedleggId() },
+        søknadId = søknadId,
+        harForståttRettigheterOgPlikter = harForståttRettigheterOgPlikter,
+        harBekreftetOpplysninger = harBekreftetOpplysninger,
+        beskrivelse = beskrivelse,
+        søknadstype = søknadstype,
+        titler = titler,
+        k9Format = k9Format
+    )
 }
-
 
 enum class Søknadstype {
     PLEIEPENGER_SYKT_BARN,
