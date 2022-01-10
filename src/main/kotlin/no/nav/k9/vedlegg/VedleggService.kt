@@ -19,7 +19,7 @@ class VedleggService(
         vedlegg: Vedlegg,
         idToken: IdToken,
         callId: CallId
-    ): VedleggId {
+    ): String {
 
         return k9MellomlagringGateway.lagreVedlegg(
             vedlegg = vedlegg,
@@ -30,7 +30,7 @@ class VedleggService(
     }
 
     suspend fun hentVedlegg(
-        vedleggId: VedleggId,
+        vedleggId: String,
         idToken: IdToken,
         callId: CallId,
         eier: DokumentEier
@@ -55,7 +55,7 @@ class VedleggService(
             vedleggUrls.forEach {
                 futures.add(async {
                     hentVedlegg(
-                        vedleggId = vedleggIdFromUrl(it),
+                        vedleggId = it.vedleggId(),
                         idToken = idToken,
                         callId = callId,
                         eier = eier
@@ -69,7 +69,7 @@ class VedleggService(
     }
 
     suspend fun slettVedlegg(
-        vedleggId: VedleggId,
+        vedleggId: String,
         idToken: IdToken,
         callId: CallId,
         eier: DokumentEier
@@ -87,7 +87,7 @@ class VedleggService(
         callId: CallId,
         eier: DokumentEier
     ) {
-        val vedleggsId = vedleggsUrls.map { vedleggIdFromUrl(it) }
+        val vedleggsId = vedleggsUrls.map { it.vedleggId() }
 
         k9MellomlagringGateway.persisterVedlegg(
             vedleggId = vedleggsId,
@@ -101,7 +101,7 @@ class VedleggService(
         callId: CallId,
         eier: DokumentEier
     ) {
-        val vedleggsId = vedleggsUrls.map { vedleggIdFromUrl(it) }
+        val vedleggsId = vedleggsUrls.map { it.vedleggId() }
 
         k9MellomlagringGateway.fjernHoldPåPersistertVedlegg(
             vedleggId = vedleggsId,
@@ -109,8 +109,6 @@ class VedleggService(
             eier = eier
         )
     }
-
-    private fun vedleggIdFromUrl(url: URL): VedleggId {
-        return VedleggId(url.path.substringAfterLast("/"))
-    }
 }
+
+fun URL.vedleggId(): String = this.toString().substringAfterLast("/")

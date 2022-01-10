@@ -13,14 +13,12 @@ import no.nav.k9.vedlegg.DokumentEier
 import no.nav.k9.vedlegg.VedleggService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.URI
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 class EttersendingService(
     private val søkerService: SøkerService,
     private val vedleggService: VedleggService,
-    private val k9MellomLagringIngress: URI,
     private val kafkaProducer: KafkaProducer
 ) {
     private val logger: Logger = LoggerFactory.getLogger(EttersendingService::class.java)
@@ -48,7 +46,7 @@ class EttersendingService(
         val titler = vedleggHentet.map { it.title }
         val mottatt = ZonedDateTime.now(ZoneOffset.UTC)
         val k9Format = ettersending.tilK9Format(mottatt, søker)
-        val komplettEttersending = ettersending.tilKomplettEttersending(k9Format, søker, k9MellomLagringIngress, mottatt, titler)
+        val komplettEttersending = ettersending.tilKomplettEttersending(k9Format, søker, mottatt, titler)
 
         try {
             kafkaProducer.produserKafkaMelding(komplettEttersending, metadata)
