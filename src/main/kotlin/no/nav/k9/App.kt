@@ -82,7 +82,7 @@ fun Application.k9EttersendingApi() {
     val issuers = configuration.issuers()
 
     install(Authentication) {
-        multipleJwtIssuers(issuers = issuers)
+        multipleJwtIssuers(issuers = issuers, logJwtPayloadOnUnsupportedIssuer = true)
     }
 
     install(StatusPages) {
