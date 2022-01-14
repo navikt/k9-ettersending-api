@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 fun TestApplicationEngine.handleRequestUploadImage(
-    cookie: Cookie,
+    jwtToken: String,
     vedlegg: ByteArray = "vedlegg/iPhone_6.jpg".fromResources().readBytes(),
     fileName: String = "iPhone_6.jpg",
     contentType: String = "image/jpeg",
@@ -19,7 +19,7 @@ fun TestApplicationEngine.handleRequestUploadImage(
     val boundary = "***vedlegg***"
 
     handleRequest(HttpMethod.Post, VEDLEGG_URL) {
-        addHeader("Cookie", cookie.toString())
+        addHeader(HttpHeaders.Authorization, "Bearer $jwtToken")
         addHeader(
             HttpHeaders.ContentType,
             ContentType.MultiPart.FormData.withParameter("boundary", boundary).toString()
@@ -57,10 +57,10 @@ fun TestApplicationEngine.handleRequestUploadImage(
 }
 
 fun TestApplicationEngine.jpegUrl(
-    cookie: Cookie
+    jwtToken: String
 ): String {
     return handleRequestUploadImage(
-        cookie = cookie,
+        jwtToken = jwtToken,
         vedlegg = "vedlegg/nav-logo.png".fromResources().readBytes(),
         fileName = "nav-logo.png",
         contentType = "image/png"
@@ -68,10 +68,10 @@ fun TestApplicationEngine.jpegUrl(
 }
 
 fun TestApplicationEngine.pdUrl(
-    cookie: Cookie
+    jwtToken: String
 ): String {
     return handleRequestUploadImage(
-        cookie = cookie,
+        jwtToken = jwtToken,
         vedlegg = "vedlegg/test.pdf".fromResources().readBytes(),
         fileName = "test.pdf",
         contentType = "application/pdf"

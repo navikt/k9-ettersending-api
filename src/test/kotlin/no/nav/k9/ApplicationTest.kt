@@ -1,14 +1,11 @@
 package no.nav.k9
 
-import com.github.tomakehurst.wiremock.http.Cookie
 import com.typesafe.config.ConfigFactory
 import io.ktor.config.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
-import no.nav.helse.getAuthCookie
-import no.nav.helse.getIdportenAuthCookie
 import no.nav.k9.EttersendingUtils.gyldigEttersendingSomJson
 import no.nav.k9.EttersendingUtils.hentGyldigEttersending
 import no.nav.k9.ettersending.Søknadstype
@@ -50,7 +47,8 @@ class ApplicationTest {
         private val kafkaKonsumer = kafkaEnvironment.testConsumer()
 
         private val gyldigFodselsnummerA = "02119970078"
-        private val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val tokenxBrukerToken = getTokendingsToken(fnr = gyldigFodselsnummerA)
+
         // Se https://github.com/navikt/dusseldorf-ktor#f%C3%B8dselsnummer
         private val myndigDato = "1999-11-02"
         private const val ikkeMyndigFnr = "12125012345"
@@ -58,10 +56,12 @@ class ApplicationTest {
         fun getConfig(): ApplicationConfig {
 
             val fileConfig = ConfigFactory.load()
-            val testConfig = ConfigFactory.parseMap(TestConfiguration.asMap(
-                wireMockServer = wireMockServer,
-                kafkaEnvironment = kafkaEnvironment
-            ))
+            val testConfig = ConfigFactory.parseMap(
+                TestConfiguration.asMap(
+                    wireMockServer = wireMockServer,
+                    kafkaEnvironment = kafkaEnvironment
+                )
+            )
             val mergedConfig = testConfig.withFallback(fileConfig)
 
             return HoconApplicationConfig(mergedConfig)
@@ -90,9 +90,7 @@ class ApplicationTest {
 
     @Test
     fun `test metrics`() {
-
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
+        val jpegUrl = engine.jpegUrl(jwtToken = getTokendingsToken(fnr = gyldigFodselsnummerA))
         val finnesIkkeUrl = jpegUrl.substringBeforeLast("/").plus("/").plus(UUID.randomUUID().toString())
 
         requestAndAssert(
@@ -118,7 +116,7 @@ class ApplicationTest {
               ]
             }""".trimIndent(),
             expectedCode = HttpStatusCode.BadRequest,
-            cookie = cookie,
+            jwtToken = getTokendingsToken(fnr = gyldigFodselsnummerA),
             requestEntity = hentGyldigEttersending().copy(
                 vedlegg = listOf(
                     URL(jpegUrl), URL(finnesIkkeUrl)
@@ -169,28 +167,13 @@ class ApplicationTest {
         """.trimIndent()
 
     @Test
-    fun `Hente søker med loginservice token`() {
-        requestAndAssert(
-            httpMethod = HttpMethod.Get,
-            path = SØKER_URL,
-            expectedCode = HttpStatusCode.OK,
-            expectedResponse = expectedGetSokerJson(
-                fodselsnummer = gyldigFodselsnummerA,
-                fodselsdato = myndigDato,
-                myndig = true
-            ),
-            cookie = getAuthCookie(gyldigFodselsnummerA)
-        )
-    }
-
-    @Test
-    fun `Hente søker med idporten token`() {
+    fun `Hente søker med tokendings token`() {
         requestAndAssert(
             httpMethod = HttpMethod.Get,
             path = SØKER_URL,
             expectedCode = HttpStatusCode.OK,
             expectedResponse = expectedGetSokerJson(gyldigFodselsnummerA),
-            cookie = getIdportenAuthCookie(gyldigFodselsnummerA)
+            jwtToken = getTokendingsToken(fnr = gyldigFodselsnummerA)
         )
     }
 
@@ -226,7 +209,7 @@ class ApplicationTest {
                 "detail": "Tilgang nektet."
             }
             """.trimIndent(),
-            cookie = getAuthCookie(ikkeMyndigFnr)
+            jwtToken = getTokendingsToken(fnr = ikkeMyndigFnr)
         )
 
         wireMockServer.stubK9OppslagSoker() // reset til default mapping
@@ -237,7 +220,7 @@ class ApplicationTest {
         requestAndAssert(
             httpMethod = HttpMethod.Get,
             path = SØKER_URL,
-            cookie = getAuthCookie(fnr = gyldigFodselsnummerA, level = 3),
+            jwtToken = getTokendingsToken(fnr = gyldigFodselsnummerA, level = 3),
             expectedCode = HttpStatusCode.Forbidden,
             expectedResponse = null
         )
@@ -245,30 +228,30 @@ class ApplicationTest {
 
     @Test
     fun `Test håndtering av vedlegg`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        
         val jpeg = "vedlegg/iPhone_6.jpg".fromResources().readBytes()
 
         with(engine) {
             // LASTER OPP VEDLEGG
             val url = handleRequestUploadImage(
-                cookie = cookie,
+                jwtToken = getTokendingsToken(fnr = gyldigFodselsnummerA),
                 vedlegg = jpeg
             )
             val path = Url(url).fullPath
             // HENTER OPPLASTET VEDLEGG
             handleRequest(HttpMethod.Get, path) {
-                addHeader("Cookie", cookie.toString())
+                addHeader(HttpHeaders.Authorization, "Bearer $tokenxBrukerToken")
             }.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertTrue(Arrays.equals(jpeg, response.byteContent))
                 // SLETTER OPPLASTET VEDLEGG
                 handleRequest(HttpMethod.Delete, path) {
-                    addHeader("Cookie", cookie.toString())
+                    addHeader(HttpHeaders.Authorization, "Bearer $tokenxBrukerToken")
                 }.apply {
                     assertEquals(HttpStatusCode.NoContent, response.status())
                     // VERIFISERER AT VEDLEGG ER SLETTET
                     handleRequest(HttpMethod.Get, path) {
-                        addHeader("Cookie", cookie.toString())
+                        addHeader(HttpHeaders.Authorization, "Bearer $tokenxBrukerToken")
                     }.apply {
                         assertEquals(HttpStatusCode.NotFound, response.status())
                     }
@@ -280,7 +263,7 @@ class ApplicationTest {
     @Test
     fun `Test opplasting av ikke støttet vedleggformat`() {
         engine.handleRequestUploadImage(
-            cookie = getAuthCookie(gyldigFodselsnummerA),
+            jwtToken = getTokendingsToken(fnr = gyldigFodselsnummerA),
             vedlegg = "jwkset.json".fromResources().readBytes(),
             contentType = "application/json",
             fileName = "jwkset.json",
@@ -291,7 +274,7 @@ class ApplicationTest {
     @Test
     fun `Test opplasting av for stort vedlegg`() {
         engine.handleRequestUploadImage(
-            cookie = getAuthCookie(gyldigFodselsnummerA),
+            jwtToken = getTokendingsToken(fnr = gyldigFodselsnummerA),
             vedlegg = ByteArray(8 * 1024 * 1024 + 10),
             contentType = "image/png",
             fileName = "big_picture.png",
@@ -301,9 +284,10 @@ class ApplicationTest {
 
     @Test
     fun `Sende full gyldig ettersending`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
+
         val ettersending = hentGyldigEttersending().copy(
             vedlegg = listOf(
                 URL(jpegUrl), URL(pdfUrl)
@@ -315,7 +299,7 @@ class ApplicationTest {
             path = ETTERSEND_URL,
             expectedResponse = null,
             expectedCode = HttpStatusCode.Accepted,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             requestEntity = ettersending.somJson()
         )
 
@@ -324,9 +308,9 @@ class ApplicationTest {
 
     @Test
     fun `Sende full gyldig ettersending uten beskrivelse`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
         val ettersending = hentGyldigEttersending().copy(
             beskrivelse = null,
             søknadstype = Søknadstype.OMP_UT_SNF,
@@ -340,7 +324,7 @@ class ApplicationTest {
             path = ETTERSEND_URL,
             expectedResponse = null,
             expectedCode = HttpStatusCode.Accepted,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             requestEntity = ettersending.somJson()
         )
 
@@ -349,15 +333,15 @@ class ApplicationTest {
 
     @Test
     fun `Sende gyldig ettersending som raw json for OMP_UTV_MA`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
         val ettersending = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UTV_MA")
         requestAndAssert(
             httpMethod = HttpMethod.Post,
             path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
-            cookie = cookie,
+            jwtToken = getTokendingsToken(fnr = gyldigFodselsnummerA),
             expectedResponse = null,
             requestEntity = ettersending
         )
@@ -367,16 +351,16 @@ class ApplicationTest {
 
     @Test
     fun `Sende gyldig ettersending som raw json for OMP_UTV_KS`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
         val ettersending = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UTV_KS")
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
             path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             expectedResponse = null,
             requestEntity = ettersending
         )
@@ -386,16 +370,16 @@ class ApplicationTest {
 
     @Test
     fun `Sende gyldig ettersending som raw json for OMP_UT_SNF`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
         val ettersending = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UT_SNF")
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
             path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             expectedResponse = null,
             requestEntity = ettersending
         )
@@ -405,16 +389,17 @@ class ApplicationTest {
 
     @Test
     fun `Sende gyldig ettersending som raw json for OMP_UT_ARBEIDSTAKER`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
+
         val ettersending = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_UT_ARBEIDSTAKER")
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
             path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             expectedResponse = null,
             requestEntity = ettersending
         )
@@ -423,15 +408,16 @@ class ApplicationTest {
 
     @Test
     fun `Sende gyldig ettersending som raw json for PLEIEPENGER_SYKT_BARN`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
+
         val ettersending = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "PLEIEPENGER_SYKT_BARN")
         requestAndAssert(
             httpMethod = HttpMethod.Post,
             path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             expectedResponse = null,
             requestEntity = ettersending
         )
@@ -440,15 +426,16 @@ class ApplicationTest {
 
     @Test
     fun `Sende gyldig ettersending som raw json for OMP_DELE_DAGER`() {
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
         val ettersending = gyldigEttersendingSomJson(jpegUrl, pdfUrl, "OMP_DELE_DAGER")
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
             path = ETTERSEND_URL,
             expectedCode = HttpStatusCode.Accepted,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             expectedResponse = null,
             requestEntity = ettersending
         )
@@ -457,9 +444,9 @@ class ApplicationTest {
 
     @Test
     fun `Sende ettersending som mangler påkrevd felt`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
@@ -482,7 +469,7 @@ class ApplicationTest {
                 }
             """.trimIndent(),
             expectedCode = HttpStatusCode.BadRequest,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             requestEntity = """
                 {
                   "språk": null,
@@ -501,8 +488,8 @@ class ApplicationTest {
 
     @Test
     fun `Sende ettersending hvor et vedlegg ikke finnes`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
         val finnesIkkeUrl = jpegUrl.substringBeforeLast("/").plus("/").plus(UUID.randomUUID().toString())
 
         requestAndAssert(
@@ -528,7 +515,7 @@ class ApplicationTest {
               ]
             }""".trimIndent(),
             expectedCode = HttpStatusCode.BadRequest,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             requestEntity = hentGyldigEttersending().copy(
                 vedlegg = listOf(
                     URL(jpegUrl), URL(finnesIkkeUrl)
@@ -539,9 +526,9 @@ class ApplicationTest {
 
     @Test
     fun `Sende ettersending for pleiepenger sykt barn med tom beskrivelse`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
@@ -564,7 +551,7 @@ class ApplicationTest {
                 }
             """.trimIndent(),
             expectedCode = HttpStatusCode.BadRequest,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             requestEntity = hentGyldigEttersending().copy(
                 beskrivelse = "",
                 søknadstype = Søknadstype.PLEIEPENGER_SYKT_BARN,
@@ -577,9 +564,9 @@ class ApplicationTest {
 
     @Test
     fun `Sende ettersending for pleiepenger sykt barn med whitespace beskrivelse`() {
-        val cookie = getAuthCookie(gyldigFodselsnummerA)
-        val jpegUrl = engine.jpegUrl(cookie)
-        val pdfUrl = engine.pdUrl(cookie)
+        
+        val jpegUrl = engine.jpegUrl(tokenxBrukerToken)
+        val pdfUrl = engine.pdUrl(tokenxBrukerToken)
 
         requestAndAssert(
             httpMethod = HttpMethod.Post,
@@ -602,7 +589,7 @@ class ApplicationTest {
                 }
             """.trimIndent(),
             expectedCode = HttpStatusCode.BadRequest,
-            cookie = cookie,
+            jwtToken = tokenxBrukerToken,
             requestEntity = hentGyldigEttersending().copy(
                 beskrivelse = " ",
                 søknadstype = Søknadstype.PLEIEPENGER_SYKT_BARN,
@@ -620,12 +607,11 @@ class ApplicationTest {
         requestEntity: String? = null,
         expectedResponse: String?,
         expectedCode: HttpStatusCode,
-        leggTilCookie: Boolean = true,
-        cookie: Cookie = getAuthCookie(gyldigFodselsnummerA)
+        jwtToken: String? = null
     ) {
         with(engine) {
             handleRequest(httpMethod, path) {
-                if (leggTilCookie) addHeader(HttpHeaders.Cookie, cookie.toString())
+                if (jwtToken != null) addHeader(HttpHeaders.Authorization, "Bearer $jwtToken")
                 logger.info("Request Entity = $requestEntity")
                 addHeader(HttpHeaders.Accept, "application/json")
                 if (requestEntity != null) addHeader(HttpHeaders.ContentType, "application/json")
@@ -644,7 +630,7 @@ class ApplicationTest {
         }
     }
 
-    private fun hentOgAssertEttersending(ettersending: JSONObject){
+    private fun hentOgAssertEttersending(ettersending: JSONObject) {
         val hentet = kafkaKonsumer.hentEttersending(ettersending.getString("søknadId"))
         assertGyldigEttersending(ettersending, hentet.data)
     }
@@ -657,12 +643,18 @@ class ApplicationTest {
         assertTrue(ettersendingFraTopic.has("mottatt"))
         assertTrue(ettersendingFraTopic.has("k9Format"))
 
-        assertEquals(ettersendingSendtInn.getEnum(Søknadstype::class.java,"søknadstype"), ettersendingFraTopic.getEnum(Søknadstype::class.java,"søknadstype"))
+        assertEquals(
+            ettersendingSendtInn.getEnum(Søknadstype::class.java, "søknadstype"),
+            ettersendingFraTopic.getEnum(Søknadstype::class.java, "søknadstype")
+        )
         assertEquals(ettersendingSendtInn.getString("søknadId"), ettersendingFraTopic.getString("søknadId"))
-        if(ettersendingSendtInn.has("beskrivelse")) {
+        if (ettersendingSendtInn.has("beskrivelse")) {
             assertEquals(ettersendingSendtInn.getString("beskrivelse"), ettersendingFraTopic.getString("beskrivelse"))
         }
 
-        assertEquals(ettersendingSendtInn.getJSONArray("vedlegg").length(),ettersendingFraTopic.getJSONArray("vedleggId").length())
+        assertEquals(
+            ettersendingSendtInn.getJSONArray("vedlegg").length(),
+            ettersendingFraTopic.getJSONArray("vedleggId").length()
+        )
     }
 }

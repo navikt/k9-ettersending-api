@@ -5,7 +5,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import no.nav.helse.dusseldorf.ktor.auth.IdTokenProvider
+import no.nav.helse.dusseldorf.ktor.auth.idToken
 import no.nav.k9.ETTERSEND_URL
 import no.nav.k9.VALIDERING_URL
 import no.nav.k9.general.formaterStatuslogging
@@ -17,8 +17,7 @@ import org.slf4j.LoggerFactory
 private val logger: Logger = LoggerFactory.getLogger("nav.ettersendingApis")
 
 fun Route.ettersendingApis(
-    ettersendingService: EttersendingService,
-    idTokenProvider: IdTokenProvider
+    ettersendingService: EttersendingService
 ) {
 
     post(ETTERSEND_URL){
@@ -27,7 +26,7 @@ fun Route.ettersendingApis(
 
         ettersendingService.registrer(
             ettersending = ettersending,
-            idToken = idTokenProvider.getIdToken(call),
+            idToken = call.idToken(),
             callId = call.getCallId(),
             metadata = call.getMetadata()
         )

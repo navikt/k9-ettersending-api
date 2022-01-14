@@ -13,10 +13,7 @@ import io.ktor.jackson.*
 import io.ktor.metrics.micrometer.*
 import io.ktor.routing.*
 import io.prometheus.client.hotspot.DefaultExports
-import no.nav.helse.dusseldorf.ktor.auth.IdTokenProvider
-import no.nav.helse.dusseldorf.ktor.auth.allIssuers
-import no.nav.helse.dusseldorf.ktor.auth.clients
-import no.nav.helse.dusseldorf.ktor.auth.multipleJwtIssuers
+import no.nav.helse.dusseldorf.ktor.auth.*
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthCheck
 import no.nav.helse.dusseldorf.ktor.client.HttpRequestHealthConfig
 import no.nav.helse.dusseldorf.ktor.client.buildURL
@@ -82,14 +79,10 @@ fun Application.k9EttersendingApi() {
         }
     }
 
-    val idTokenProvider = IdTokenProvider(cookieName = configuration.getCookieName())
     val issuers = configuration.issuers()
 
     install(Authentication) {
-        multipleJwtIssuers(
-            issuers = issuers,
-            extractHttpAuthHeader = { call -> idTokenProvider.getIdToken(call).somHttpAuthHeader() }
-        )
+        multipleJwtIssuers(issuers = issuers)
     }
 
     install(StatusPages) {
@@ -131,19 +124,9 @@ fun Application.k9EttersendingApi() {
         }
 
         authenticate(*issuers.allIssuers()) {
-
-            søkerApis(
-                søkerService = søkerService,
-                idTokenProvider = idTokenProvider
-            )
-
-            vedleggApis(
-                vedleggService = vedleggService,
-                idTokenProvider = idTokenProvider
-            )
-
+            søkerApis(søkerService = søkerService)
+            vedleggApis(vedleggService = vedleggService)
             ettersendingApis(
-                idTokenProvider = idTokenProvider,
                 ettersendingService = EttersendingService(
                     søkerService = søkerService,
                     vedleggService = vedleggService,
@@ -196,7 +179,7 @@ fun Application.k9EttersendingApi() {
         logRequests()
         mdc("id_token_jti") { call ->
             try {
-                idTokenProvider.getIdToken(call).getId()
+                call.idToken().getId()
             } catch (cause: Throwable) {
                 null
             }
