@@ -33,9 +33,6 @@ class ApplicationTest {
 
         val wireMockServer = WireMockBuilder()
             .withAzureSupport()
-            .withNaisStsSupport()
-            .withLoginServiceSupport()
-            .withIDPortenSupport()
             .withTokendingsSupport()
             .k9EttersendingApiConfig()
             .build()
