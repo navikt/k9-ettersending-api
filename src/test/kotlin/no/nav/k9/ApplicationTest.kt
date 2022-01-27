@@ -38,7 +38,6 @@ class ApplicationTest {
             .withAzureSupport()
             .withNaisStsSupport()
             .withLoginServiceSupport()
-            .withIDPortenSupport()
             .withTokendingsSupport()
             .k9EttersendingApiConfig()
             .build()
