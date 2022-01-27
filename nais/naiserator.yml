@@ -49,6 +49,9 @@ spec:
   tokenx:
     enabled: true
   accessPolicy:
+    inbound:
+      rules:
+        - application: sif-ettersending
     outbound:
       rules:
         - application: k9-mellomlagring

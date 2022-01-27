@@ -5,9 +5,9 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import no.nav.helse.dusseldorf.ktor.auth.IdTokenProvider
 import no.nav.k9.ETTERSEND_URL
 import no.nav.k9.VALIDERING_URL
+import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.formaterStatuslogging
 import no.nav.k9.general.getCallId
 import no.nav.k9.general.getMetadata

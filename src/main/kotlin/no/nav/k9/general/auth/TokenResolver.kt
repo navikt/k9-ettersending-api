@@ -1,5 +1,7 @@
 package no.nav.k9.general.auth
 
+import io.ktor.application.*
+import io.ktor.auth.*
 import no.nav.helse.dusseldorf.ktor.auth.IdToken
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import org.slf4j.LoggerFactory
@@ -10,18 +12,46 @@ object TokenResolver {
         accessTokenClient: CachedAccessTokenClient,
         idToken: IdToken,
         scope: Set<String>
-    ): IdToken = when {
-        idToken.issuerIsLoginservice() -> idToken
-
-        else -> {
-            val exchangeToken = IdToken(
-                accessTokenClient.getAccessToken(
-                    scopes = scope,
-                    onBehalfOf = idToken.value
-                ).token
-            )
-            logger.info("Utvekslet token fra {} med token fra {}.", idToken.issuer(), exchangeToken.issuer())
-            exchangeToken
-        }
+    ): IdToken {
+        val exchangeToken = IdToken(
+            accessTokenClient.getAccessToken(
+                scopes = scope,
+                onBehalfOf = idToken.value
+            ).token
+        )
+        logger.info("Utvekslet token fra {} med token fra {}.", idToken.issuer(), exchangeToken.issuer())
+        return exchangeToken
     }
 }
+
+class IdTokenProvider(
+    private val cookieName : String? = null
+) {
+
+    private val logger = LoggerFactory.getLogger(IdTokenProvider::class.java)
+
+    fun getIdToken(call: ApplicationCall) : IdToken {
+        logger.info("Henter IdToken")
+
+        if(cookieName != null) {
+            logger.info("Forsøker å hente IdToken fra cookie")
+
+            val cookie = call.request.cookies[cookieName]
+            if(cookie != null) return IdToken(cookie)
+        }
+
+        // Betyr at vi ikke fant noe token i cookie, eller at vi ikke skal støtte cookie.
+        // Da skal token ligge som header
+        logger.info("Forsøker å hente IdToken fra auth header")
+
+        val jwt = call.request.parseAuthorizationHeader()?.render()
+        if(jwt != null) {
+            //Betyr at det fantes en auth header
+            return IdToken(jwt.substringAfter("Bearer "))
+        }
+
+        throw NoTokenSetException(cookieName)
+    }
+}
+
+class NoTokenSetException(cookieName : String?) : RuntimeException("Ingen cookie med navnet '$cookieName' eller auth header satt.")

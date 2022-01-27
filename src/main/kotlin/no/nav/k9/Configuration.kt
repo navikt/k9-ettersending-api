@@ -17,11 +17,13 @@ data class Configuration(val config : ApplicationConfig) {
         EnforceEqualsOrContains("acr", "Level4")
     )
 
-    internal fun issuers() = config.issuers().withAdditionalClaimRules(mapOf(
-        "login-service-v1" to serviceClaims,
-        "login-service-v2" to serviceClaims,
-        "id-porten" to serviceClaims
-    ))
+    internal fun issuers() = config.issuers().withAdditionalClaimRules(
+        mapOf(
+            "login-service-v1" to serviceClaims,
+            "login-service-v2" to serviceClaims,
+            "tokenx" to serviceClaims
+        )
+    )
 
     internal fun getCookieName(): String {
         return config.getRequiredString("nav.authorization.cookie_name", secret = false)

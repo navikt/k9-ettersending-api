@@ -8,7 +8,7 @@ import io.ktor.server.testing.*
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import no.nav.helse.getAuthCookie
-import no.nav.helse.getIdportenAuthCookie
+import no.nav.helse.getTokenDingsToken
 import no.nav.k9.EttersendingUtils.gyldigEttersendingSomJson
 import no.nav.k9.EttersendingUtils.hentGyldigEttersending
 import no.nav.k9.ettersending.Søknadstype
@@ -51,6 +51,8 @@ class ApplicationTest {
 
         private val gyldigFodselsnummerA = "02119970078"
         private val cookie = getAuthCookie(gyldigFodselsnummerA)
+        private val tokenXToken = getTokenDingsToken(fnr = gyldigFodselsnummerA)
+
         // Se https://github.com/navikt/dusseldorf-ktor#f%C3%B8dselsnummer
         private val myndigDato = "1999-11-02"
         private const val ikkeMyndigFnr = "12125012345"
@@ -58,10 +60,12 @@ class ApplicationTest {
         fun getConfig(): ApplicationConfig {
 
             val fileConfig = ConfigFactory.load()
-            val testConfig = ConfigFactory.parseMap(TestConfiguration.asMap(
-                wireMockServer = wireMockServer,
-                kafkaEnvironment = kafkaEnvironment
-            ))
+            val testConfig = ConfigFactory.parseMap(
+                TestConfiguration.asMap(
+                    wireMockServer = wireMockServer,
+                    kafkaEnvironment = kafkaEnvironment
+                )
+            )
             val mergedConfig = testConfig.withFallback(fileConfig)
 
             return HoconApplicationConfig(mergedConfig)
@@ -184,13 +188,13 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Hente søker med idporten token`() {
-        requestAndAssert(
+    fun `Hente søker med tokenX token`() {
+        requestAndAssertV2(
             httpMethod = HttpMethod.Get,
             path = SØKER_URL,
             expectedCode = HttpStatusCode.OK,
             expectedResponse = expectedGetSokerJson(gyldigFodselsnummerA),
-            cookie = getIdportenAuthCookie(gyldigFodselsnummerA)
+            jwtToken = tokenXToken
         )
     }
 
@@ -626,6 +630,35 @@ class ApplicationTest {
         with(engine) {
             handleRequest(httpMethod, path) {
                 if (leggTilCookie) addHeader(HttpHeaders.Cookie, cookie.toString())
+                logger.info("Request Entity = $requestEntity")
+                addHeader(HttpHeaders.Accept, "application/json")
+                if (requestEntity != null) addHeader(HttpHeaders.ContentType, "application/json")
+                if (requestEntity != null) setBody(requestEntity)
+            }.apply {
+                logger.info("Response Entity = ${response.content}")
+                logger.info("Expected Entity = $expectedResponse")
+                assertEquals(expectedCode, response.status())
+                if (expectedResponse != null) {
+                    JSONAssert.assertEquals(expectedResponse, response.content!!, true)
+                    //assertNotNull(response.headers["problem-details"])
+                } else {
+                    assertEquals(expectedResponse, response.content)
+                }
+            }
+        }
+    }
+
+    private fun requestAndAssertV2(
+        httpMethod: HttpMethod,
+        path: String,
+        requestEntity: String? = null,
+        expectedResponse: String?,
+        expectedCode: HttpStatusCode,
+        jwtToken: String? = null
+    ) {
+        with(engine) {
+            handleRequest(httpMethod, path) {
+                if (jwtToken != null) addHeader(HttpHeaders.Authorization, "Bearer $jwtToken")
                 logger.info("Request Entity = $requestEntity")
                 addHeader(HttpHeaders.Accept, "application/json")
                 if (requestEntity != null) addHeader(HttpHeaders.ContentType, "application/json")

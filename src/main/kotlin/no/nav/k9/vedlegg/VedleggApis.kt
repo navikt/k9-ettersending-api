@@ -7,11 +7,11 @@ import io.ktor.http.content.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import no.nav.helse.dusseldorf.ktor.auth.IdTokenProvider
 import no.nav.helse.dusseldorf.ktor.core.DefaultProblemDetails
 import no.nav.helse.dusseldorf.ktor.core.respondProblemDetails
 import no.nav.k9.VEDLEGGID_URL
 import no.nav.k9.VEDLEGG_URL
+import no.nav.k9.general.auth.IdTokenProvider
 import no.nav.k9.general.getCallId
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

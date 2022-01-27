@@ -45,6 +45,7 @@ class SøkerGateway(
             )
         ).toString()
         val token = TokenResolver.resolveToken(accessTokenClient, idToken, k9SelvbetjeningOppslagTokenxAudience)
+        //val token = IdToken(accessTokenClient.getAccessToken(k9SelvbetjeningOppslagTokenxAudience, idToken.value).token)
         val httpRequest = generateHttpRequest(token, sokerUrl, callId)
 
         val oppslagRespons = Retry.retry(
