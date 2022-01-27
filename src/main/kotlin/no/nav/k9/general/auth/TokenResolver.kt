@@ -31,19 +31,13 @@ class IdTokenProvider(
     private val logger = LoggerFactory.getLogger(IdTokenProvider::class.java)
 
     fun getIdToken(call: ApplicationCall) : IdToken {
-        logger.info("Henter IdToken")
-
         if(cookieName != null) {
-            logger.info("Forsøker å hente IdToken fra cookie")
-
             val cookie = call.request.cookies[cookieName]
             if(cookie != null) return IdToken(cookie)
         }
 
         // Betyr at vi ikke fant noe token i cookie, eller at vi ikke skal støtte cookie.
         // Da skal token ligge som header
-        logger.info("Forsøker å hente IdToken fra auth header")
-
         val jwt = call.request.parseAuthorizationHeader()?.render()
         if(jwt != null) {
             //Betyr at det fantes en auth header
