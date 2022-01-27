@@ -10,7 +10,6 @@ import no.nav.helse.dusseldorf.ktor.core.Retry
 import no.nav.helse.dusseldorf.ktor.metrics.Operation
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.general.CallId
-import no.nav.k9.general.auth.TokenResolver
 import no.nav.k9.general.oppslag.K9OppslagGateway
 import no.nav.k9.general.oppslag.throwable
 import no.nav.k9.k9SelvbetjeningOppslagKonfigurert
@@ -44,9 +43,10 @@ class SøkerGateway(
                 attributter
             )
         ).toString()
-        val token = TokenResolver.resolveToken(accessTokenClient, idToken, k9SelvbetjeningOppslagTokenxAudience)
-        //val token = IdToken(accessTokenClient.getAccessToken(k9SelvbetjeningOppslagTokenxAudience, idToken.value).token)
-        val httpRequest = generateHttpRequest(token, sokerUrl, callId)
+        val exchangeToken = IdToken(accessTokenClient.getAccessToken(k9SelvbetjeningOppslagTokenxAudience, idToken.value).token)
+        logger.info("Utvekslet token fra {} med token fra {}.", idToken.issuer(), exchangeToken.issuer())
+
+        val httpRequest = generateHttpRequest(exchangeToken, sokerUrl, callId)
 
         val oppslagRespons = Retry.retry(
             operation = HENTE_SOKER_OPERATION,
