@@ -8,7 +8,7 @@ import io.ktor.server.testing.*
 import no.nav.helse.dusseldorf.ktor.core.fromResources
 import no.nav.helse.dusseldorf.testsupport.wiremock.WireMockBuilder
 import no.nav.helse.getAuthCookie
-import no.nav.helse.getIdportenAuthCookie
+import no.nav.helse.getTokenDingsToken
 import no.nav.k9.EttersendingUtils.gyldigEttersendingSomJson
 import no.nav.k9.EttersendingUtils.hentGyldigEttersending
 import no.nav.k9.ettersending.Søknadstype
@@ -38,7 +38,6 @@ class ApplicationTest {
             .withAzureSupport()
             .withNaisStsSupport()
             .withLoginServiceSupport()
-            .withIDPortenSupport()
             .withTokendingsSupport()
             .k9EttersendingApiConfig()
             .build()
@@ -51,6 +50,8 @@ class ApplicationTest {
 
         private val gyldigFodselsnummerA = "02119970078"
         private val cookie = getAuthCookie(gyldigFodselsnummerA)
+        private val tokenXToken = getTokenDingsToken(fnr = gyldigFodselsnummerA)
+
         // Se https://github.com/navikt/dusseldorf-ktor#f%C3%B8dselsnummer
         private val myndigDato = "1999-11-02"
         private const val ikkeMyndigFnr = "12125012345"
@@ -58,10 +59,12 @@ class ApplicationTest {
         fun getConfig(): ApplicationConfig {
 
             val fileConfig = ConfigFactory.load()
-            val testConfig = ConfigFactory.parseMap(TestConfiguration.asMap(
-                wireMockServer = wireMockServer,
-                kafkaEnvironment = kafkaEnvironment
-            ))
+            val testConfig = ConfigFactory.parseMap(
+                TestConfiguration.asMap(
+                    wireMockServer = wireMockServer,
+                    kafkaEnvironment = kafkaEnvironment
+                )
+            )
             val mergedConfig = testConfig.withFallback(fileConfig)
 
             return HoconApplicationConfig(mergedConfig)
@@ -184,13 +187,13 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Hente søker med idporten token`() {
+    fun `Hente søker med tokenX token`() {
         requestAndAssert(
             httpMethod = HttpMethod.Get,
             path = SØKER_URL,
             expectedCode = HttpStatusCode.OK,
             expectedResponse = expectedGetSokerJson(gyldigFodselsnummerA),
-            cookie = getIdportenAuthCookie(gyldigFodselsnummerA)
+            jwtToken = tokenXToken
         )
     }
 
@@ -317,6 +320,29 @@ class ApplicationTest {
             expectedCode = HttpStatusCode.Accepted,
             cookie = cookie,
             requestEntity = ettersending.somJson()
+        )
+
+        hentOgAssertEttersending(JSONObject(ettersending))
+    }
+
+    @Test
+    fun `Sende full gyldig ettersending med tokenX`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+        val ettersending = hentGyldigEttersending().copy(
+            vedlegg = listOf(
+                URL(jpegUrl), URL(pdfUrl)
+            )
+        )
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = ETTERSEND_URL,
+            expectedResponse = null,
+            expectedCode = HttpStatusCode.Accepted,
+            requestEntity = ettersending.somJson(),
+            jwtToken = tokenXToken
         )
 
         hentOgAssertEttersending(JSONObject(ettersending))
@@ -620,12 +646,13 @@ class ApplicationTest {
         requestEntity: String? = null,
         expectedResponse: String?,
         expectedCode: HttpStatusCode,
-        leggTilCookie: Boolean = true,
-        cookie: Cookie = getAuthCookie(gyldigFodselsnummerA)
+        jwtToken: String? = null,
+        cookie: Cookie? = null
     ) {
         with(engine) {
             handleRequest(httpMethod, path) {
-                if (leggTilCookie) addHeader(HttpHeaders.Cookie, cookie.toString())
+                if (cookie != null) addHeader(HttpHeaders.Cookie, cookie.toString())
+                if (jwtToken != null) addHeader(HttpHeaders.Authorization, "Bearer $jwtToken")
                 logger.info("Request Entity = $requestEntity")
                 addHeader(HttpHeaders.Accept, "application/json")
                 if (requestEntity != null) addHeader(HttpHeaders.ContentType, "application/json")

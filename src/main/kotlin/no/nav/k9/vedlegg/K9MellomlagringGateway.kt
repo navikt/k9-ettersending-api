@@ -24,7 +24,6 @@ import no.nav.helse.dusseldorf.ktor.metrics.Operation.Companion.monitored
 import no.nav.helse.dusseldorf.oauth2.client.AccessTokenClient
 import no.nav.helse.dusseldorf.oauth2.client.CachedAccessTokenClient
 import no.nav.k9.general.CallId
-import no.nav.k9.general.auth.TokenResolver
 import no.nav.k9.k9MellomlagringKonfigurert
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -86,14 +85,15 @@ class K9MellomlagringGateway(
                 resultResolver = { 201 == it.second.statusCode }
             ) {
                 val contentStream = { ByteArrayInputStream(body) }
-                val token = TokenResolver.resolveToken(exchangeTokenClient, idToken, k9MellomlagringTokenxAudience)
+                val exchangeToken = IdToken(exchangeTokenClient.getAccessToken(k9MellomlagringTokenxAudience, idToken.value).token)
+                logger.info("Utvekslet token fra {} med token fra {}.", idToken.issuer(), exchangeToken.issuer())
 
                 komplettUrl
                     .toString()
                     .httpPost()
                     .body(contentStream)
                     .header(
-                        HttpHeaders.Authorization to "Bearer ${token.value}",
+                        HttpHeaders.Authorization to "Bearer ${exchangeToken.value}",
                         HttpHeaders.ContentType to "application/json",
                         HttpHeaders.Accept to "application/json",
                         HttpHeaders.XCorrelationId to callId.value
@@ -127,14 +127,15 @@ class K9MellomlagringGateway(
             pathParts = listOf(vedleggId)
         )
 
-        val token = TokenResolver.resolveToken(exchangeTokenClient, idToken, k9MellomlagringTokenxAudience)
+        val exchangeToken = IdToken(exchangeTokenClient.getAccessToken(k9MellomlagringTokenxAudience, idToken.value).token)
+        logger.info("Utvekslet token fra {} med token fra {}.", idToken.issuer(), exchangeToken.issuer())
 
         val httpRequest = urlMedId
             .toString()
             .httpDelete()
             .body(body)
             .header(
-                HttpHeaders.Authorization to "Bearer ${token.value}",
+                HttpHeaders.Authorization to "Bearer ${exchangeToken.value}",
                 HttpHeaders.XCorrelationId to callId.value,
                 HttpHeaders.ContentType to "application/json"
             )
@@ -340,14 +341,15 @@ class K9MellomlagringGateway(
             pathParts = listOf(vedleggId)
         )
 
-        val token = TokenResolver.resolveToken(exchangeTokenClient, idToken, k9MellomlagringTokenxAudience)
+        val exchangeToken = IdToken(exchangeTokenClient.getAccessToken(k9MellomlagringTokenxAudience, idToken.value).token)
+        logger.info("Utvekslet token fra {} med token fra {}.", idToken.issuer(), exchangeToken.issuer())
 
         val httpRequest = urlMedId
             .toString()
             .httpPost()
             .body(body)
             .header(
-                HttpHeaders.Authorization to "Bearer ${token.value}",
+                HttpHeaders.Authorization to "Bearer ${exchangeToken.value}",
                 HttpHeaders.XCorrelationId to callId.value,
                 HttpHeaders.ContentType to "application/json",
                 HttpHeaders.Accept to "application/json"
