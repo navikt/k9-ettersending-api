@@ -27,25 +27,17 @@ object TokenResolver {
 class IdTokenProvider(
     private val cookieName : String? = null
 ) {
-
-    private val logger = LoggerFactory.getLogger(IdTokenProvider::class.java)
-
     fun getIdToken(call: ApplicationCall) : IdToken {
         if(cookieName != null) {
             val cookie = call.request.cookies[cookieName]
             if(cookie != null) return IdToken(cookie)
         }
 
-        // Betyr at vi ikke fant noe token i cookie, eller at vi ikke skal støtte cookie.
-        // Da skal token ligge som header
         val jwt = call.request.parseAuthorizationHeader()?.render()
-        if(jwt != null) {
-            //Betyr at det fantes en auth header
-            return IdToken(jwt.substringAfter("Bearer "))
-        }
+        if(jwt != null) return IdToken(jwt.substringAfter("Bearer "))
 
-        throw NoTokenSetException(cookieName)
+        throw NoTokenSetException()
     }
 }
 
-class NoTokenSetException(cookieName : String?) : RuntimeException("Ingen cookie med navnet '$cookieName' eller auth header satt.")
+class NoTokenSetException() : RuntimeException("Fant ikke token som cookie eller auth header.")

@@ -33,6 +33,11 @@ fun StatusPages.Configuration.IdTokenStatusPages() {
         logger.trace(cause.message)
     }
 
+    exception<NoTokenSetException> { cause ->
+        call.respond(HttpStatusCode.Unauthorized)
+        logger.trace(cause.message)
+    }
+
     exception<IdTokenInvalidFormatException> { cause ->
         call.respond(HttpStatusCode.Unauthorized)
         logger.error(cause.message)
