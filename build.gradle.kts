@@ -50,7 +50,7 @@ dependencies {
     }
     testImplementation ("org.skyscreamer:jsonassert:1.5.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
-    testImplementation("io.mockk:mockk:1.12.2")
+    testImplementation("io.mockk:mockk:1.12.3")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
 
