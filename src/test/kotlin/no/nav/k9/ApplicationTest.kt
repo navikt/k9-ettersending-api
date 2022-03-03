@@ -326,6 +326,30 @@ class ApplicationTest {
     }
 
     @Test
+    fun `Sende full gyldig ettersending for PLEIEPENGER_LIVETS_SLUTTFASE`() {
+        val cookie = getAuthCookie(gyldigFodselsnummerA)
+        val jpegUrl = engine.jpegUrl(cookie)
+        val pdfUrl = engine.pdUrl(cookie)
+        val ettersending = hentGyldigEttersending().copy(
+            vedlegg = listOf(
+                URL(jpegUrl), URL(pdfUrl)
+            ),
+            søknadstype = Søknadstype.PLEIEPENGER_LIVETS_SLUTTFASE
+        )
+
+        requestAndAssert(
+            httpMethod = HttpMethod.Post,
+            path = ETTERSEND_URL,
+            expectedResponse = null,
+            expectedCode = HttpStatusCode.Accepted,
+            cookie = cookie,
+            requestEntity = ettersending.somJson()
+        )
+
+        hentOgAssertEttersending(JSONObject(ettersending))
+    }
+
+    @Test
     fun `Sende full gyldig ettersending med tokenX`() {
         val cookie = getAuthCookie(gyldigFodselsnummerA)
         val jpegUrl = engine.jpegUrl(cookie)
@@ -638,7 +662,6 @@ class ApplicationTest {
             ).somJson()
         )
     }
-
 
     private fun requestAndAssert(
         httpMethod: HttpMethod,

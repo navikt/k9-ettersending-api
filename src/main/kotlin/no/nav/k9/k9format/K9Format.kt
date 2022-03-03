@@ -28,5 +28,6 @@ private fun Søknadstype.tilK9Ytelse(): Ytelse {
         Søknadstype.PLEIEPENGER_SYKT_BARN -> Ytelse.PLEIEPENGER_SYKT_BARN
         Søknadstype.OMP_UT_SNF, Søknadstype.OMP_UT_ARBEIDSTAKER -> Ytelse.OMP_UT
         Søknadstype.OMP_DELE_DAGER -> Ytelse.OMP_DELE_DAGER
+        Søknadstype.PLEIEPENGER_LIVETS_SLUTTFASE -> Ytelse.PLEIEPENGER_LIVETS_SLUTTFASE
     }
 }

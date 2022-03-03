@@ -25,6 +25,17 @@ internal fun Ettersending.valider() {
         )
     }
 
+    if(søknadstype == Søknadstype.PLEIEPENGER_LIVETS_SLUTTFASE && beskrivelse.isNullOrBlank()){
+        violations.add(
+            Violation(
+                parameterName = "beskrivelse",
+                parameterType = ParameterType.ENTITY,
+                reason = "Beskrivelse kan ikke være tom eller blank dersom det gjelder pleiepenger i livets sluttfase",
+                invalidValue = beskrivelse
+            )
+        )
+    }
+
     if(vedlegg.isEmpty()){
         violations.add(
             Violation(
