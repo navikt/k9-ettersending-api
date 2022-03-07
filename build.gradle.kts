@@ -49,7 +49,7 @@ dependencies {
         exclude(group = "org.eclipse.jetty")
     }
     testImplementation ("org.skyscreamer:jsonassert:1.5.0")
-    testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
+    testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
     testImplementation("io.mockk:mockk:1.12.3")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
