@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val mainClass = "no.nav.k9.AppKt"
-val dusseldorfKtorVersion = "3.1.6.7-05da1a0"
+val dusseldorfKtorVersion = "3.1.6.8-248832c"
 val ktorVersion = ext.get("ktorVersion").toString()
 val k9FormatVersion = "5.8.3"
 val fuelVersion = "2.3.1"
