@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val mainClass = "no.nav.k9.AppKt"
 val dusseldorfKtorVersion = "3.1.6.7-05da1a0"
 val ktorVersion = ext.get("ktorVersion").toString()
-val k9FormatVersion = "5.8.3"
+val k9FormatVersion = "5.8.5"
 val fuelVersion = "2.3.1"
 val kafkaEmbeddedEnvVersion = ext.get("kafkaEmbeddedEnvVersion").toString()
 val kafkaVersion = ext.get("kafkaVersion").toString() // Alligned med version fra kafka-embedded-env
