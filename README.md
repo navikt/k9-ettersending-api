@@ -1,3 +1,5 @@
+# OBS: Erstattet av [k9-brukerdialog-api](https://github.com/navikt/k9-brukerdialog-api)
+
 # K9 Ettersending API
 
 ![CI / CD](https://github.com/navikt/k9-ettersending-api/workflows/CI%20/%20CD/badge.svg)
